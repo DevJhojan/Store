@@ -1,13 +1,13 @@
-"""Punto de entrada principal para la aplicación de gestión de inventarios."""
+"""Punto de entrada principal para la aplicación de gestión."""
 import tkinter as tk
 
-from inventory_manager.ui import InventoryManagerGUI
+from inventory_manager.main_window import MainWindow
 
 
 def main():
     """Función principal para ejecutar la aplicación."""
     root = tk.Tk()
-    app = InventoryManagerGUI(root)
+    app = MainWindow(root)
     root.mainloop()
 
 
