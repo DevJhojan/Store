@@ -60,8 +60,10 @@ class VentaService:
         if not venta.numero_factura:
             venta.numero_factura = self.venta_repository.generar_numero_factura()
         
-        # Calcular totales
-        venta.calcular_total()
+        # Los totales ya deben estar calculados con descuentos e impuestos
+        # Si no están actualizados, calcular básicos (pero los de la UI tienen prioridad)
+        if venta.descuento_total == 0.0 and venta.impuesto_total == 0.0:
+            venta.calcular_total()
         
         # Realizar venta en transacción
         try:

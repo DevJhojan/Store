@@ -1122,8 +1122,11 @@ class SalesGUI:
             )
             return
         
+        # Actualizar totales ANTES de confirmar y registrar (incluye descuentos e impuestos configurados)
+        self.actualizar_totales()
+        
         # Confirmar venta
-        total = self.venta_actual.calcular_total()
+        total = self.venta_actual.total
         if not messagebox.askyesno(
             "Confirmar Venta",
             f"¿Confirmar venta por un total de ${total:,.2f}?",
@@ -1131,17 +1134,16 @@ class SalesGUI:
         ):
             return
         
-        # Registrar venta
+        # Registrar venta (ya tiene los totales actualizados con descuentos e impuestos)
         exitoso, mensaje, venta_id = self.service.registrar_venta(self.venta_actual)
         
         if exitoso:
-            # La venta ya tiene número de factura y está guardada
-            # Obtener la venta completa desde la BD para el PDF
-            venta_guardada = self.service.obtener_venta_por_id(venta_id)
-            if venta_guardada:
-                self.venta_actual = venta_guardada
+            # Usar la venta actual que ya tiene los totales correctos (con descuentos e impuestos)
+            # No es necesario recuperarla de la BD ya que los valores ya están actualizados
+            # Solo asegurar que tenga el ID correcto
+            self.venta_actual.id = venta_id
             
-            # Generar PDF de factura
+            # Generar PDF de factura usando la venta actual con totales correctos
             pdf_path = None
             try:
                 from .pdf_generator import generar_factura_pdf
