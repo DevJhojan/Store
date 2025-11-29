@@ -162,4 +162,23 @@ class ProductRepository:
             cursor.execute("SELECT SUM(cantidad * precio_unitario) FROM productos")
             result = cursor.fetchone()[0]
             return result if result else 0.0
+    
+    def buscar_por_nombre(self, nombre: str) -> List[Producto]:
+        """
+        Busca productos por nombre usando LIKE.
+        
+        Args:
+            nombre: Texto a buscar en el nombre del producto
+            
+        Returns:
+            Lista de productos que coinciden con el nombre
+        """
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT * FROM productos WHERE nombre LIKE ? ORDER BY nombre",
+                (f"%{nombre}%",)
+            )
+            rows = cursor.fetchall()
+            return [Producto.from_tuple(row) for row in rows]
 

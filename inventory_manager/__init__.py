@@ -1,21 +1,26 @@
-"""Sistema de Gestión de Inventarios - Paquete Python instalable.
+"""Sistema de Gestión - Paquete Python instalable.
 
-Este paquete proporciona un sistema completo de gestión de inventarios
-con interfaz gráfica usando tkinter y almacenamiento en SQLite.
+Este paquete proporciona un sistema completo de gestión con módulos
+de Inventarios y Ventas, con interfaz gráfica usando tkinter y
+almacenamiento en SQLite.
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Store Development Team"
 
 from .domain import Producto
 from .services import InventoryService
 from .repository import ProductRepository
-from .ui import InventoryManagerGUI
+from .main_window import MainWindow
+from .inventory.ui.views import InventoryGUI
+from .sales.ui.views import SalesGUI
 
 __all__ = [
     "Producto",
     "InventoryService",
     "ProductRepository",
-    "InventoryManagerGUI",
+    "MainWindow",
+    "InventoryGUI",
+    "SalesGUI",
 ]
 
