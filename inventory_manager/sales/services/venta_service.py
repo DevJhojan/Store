@@ -173,4 +173,16 @@ class VentaService:
             Producto si existe, None en caso contrario
         """
         return self.product_repository.get_by_code(codigo)
+    
+    def buscar_productos_por_nombre(self, nombre: str) -> List[Producto]:
+        """
+        Busca productos por nombre.
+        
+        Args:
+            nombre: Texto a buscar en el nombre del producto
+            
+        Returns:
+            Lista de productos que coinciden con el nombre
+        """
+        return self.product_repository.buscar_por_nombre(nombre)
 

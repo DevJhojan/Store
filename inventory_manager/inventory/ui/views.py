@@ -334,7 +334,7 @@ class InventoryGUI:
         # Validar campos
         es_valido, key_campo_vacio, nombre_campo_vacio = validate_fields(self.entries, Settings.FIELD_NAMES)
         if not es_valido:
-            messagebox.showerror("Error", f"El campo '{nombre_campo_vacio}' es obligatorio.")
+            messagebox.showerror("Error", f"El campo '{nombre_campo_vacio}' es obligatorio.", parent=self.window)
             self.entries[key_campo_vacio].focus()
             return
         
@@ -343,7 +343,7 @@ class InventoryGUI:
             self.entries["cantidad"].get().strip(), int
         )
         if not cantidad_exitoso:
-            messagebox.showerror("Error", f"Cantidad: {msg_cantidad}")
+            messagebox.showerror("Error", f"Cantidad: {msg_cantidad}", parent=self.window)
             self.entries["cantidad"].focus()
             return
         
@@ -351,7 +351,7 @@ class InventoryGUI:
             self.entries["precio_unitario"].get().strip(), float
         )
         if not precio_exitoso:
-            messagebox.showerror("Error", f"Precio Unitario: {msg_precio}")
+            messagebox.showerror("Error", f"Precio Unitario: {msg_precio}", parent=self.window)
             self.entries["precio_unitario"].focus()
             return
         
@@ -365,24 +365,24 @@ class InventoryGUI:
         )
         
         if exitoso:
-            messagebox.showinfo("Éxito", mensaje)
+            messagebox.showinfo("Éxito", mensaje, parent=self.window)
             self.clear_form()
             self.load_products()
             self.update_total_value()
         else:
-            messagebox.showerror("Error", mensaje)
+            messagebox.showerror("Error", mensaje, parent=self.window)
     
     def update_product(self):
         """Actualizar un producto existente."""
         selected = self.tree.selection()
         if not selected:
-            messagebox.showwarning("Advertencia", "Seleccione un producto para actualizar.")
+            messagebox.showwarning("Advertencia", "Seleccione un producto para actualizar.", parent=self.window)
             return
         
         # Validar campos
         es_valido, key_campo_vacio, nombre_campo_vacio = validate_fields(self.entries, Settings.FIELD_NAMES)
         if not es_valido:
-            messagebox.showerror("Error", f"El campo '{nombre_campo_vacio}' es obligatorio.")
+            messagebox.showerror("Error", f"El campo '{nombre_campo_vacio}' es obligatorio.", parent=self.window)
             self.entries[key_campo_vacio].focus()
             return
         
@@ -391,7 +391,7 @@ class InventoryGUI:
             self.entries["cantidad"].get().strip(), int
         )
         if not cantidad_exitoso:
-            messagebox.showerror("Error", f"Cantidad: {msg_cantidad}")
+            messagebox.showerror("Error", f"Cantidad: {msg_cantidad}", parent=self.window)
             self.entries["cantidad"].focus()
             return
         
@@ -399,7 +399,7 @@ class InventoryGUI:
             self.entries["precio_unitario"].get().strip(), float
         )
         if not precio_exitoso:
-            messagebox.showerror("Error", f"Precio Unitario: {msg_precio}")
+            messagebox.showerror("Error", f"Precio Unitario: {msg_precio}", parent=self.window)
             self.entries["precio_unitario"].focus()
             return
         
@@ -416,22 +416,22 @@ class InventoryGUI:
         )
         
         if exitoso:
-            messagebox.showinfo("Éxito", mensaje)
+            messagebox.showinfo("Éxito", mensaje, parent=self.window)
             self.clear_form()
             self.load_products()
             self.update_total_value()
         else:
-            messagebox.showerror("Error", mensaje)
+            messagebox.showerror("Error", mensaje, parent=self.window)
     
     def delete_product(self):
         """Eliminar un producto."""
         selected = self.tree.selection()
         if not selected:
-            messagebox.showwarning("Advertencia", "Seleccione un producto para eliminar.")
+            messagebox.showwarning("Advertencia", "Seleccione un producto para eliminar.", parent=self.window)
             return
         
         # Confirmar eliminación
-        if not messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este producto?"):
+        if not messagebox.askyesno("Confirmar", "¿Está seguro de que desea eliminar este producto?", parent=self.window):
             return
         
         codigo = self.tree.item(selected[0])["values"][0]
@@ -440,12 +440,12 @@ class InventoryGUI:
         exitoso, mensaje = self.service.eliminar_producto(codigo)
         
         if exitoso:
-            messagebox.showinfo("Éxito", mensaje)
+            messagebox.showinfo("Éxito", mensaje, parent=self.window)
             self.clear_form()
             self.load_products()
             self.update_total_value()
         else:
-            messagebox.showerror("Error", mensaje)
+            messagebox.showerror("Error", mensaje, parent=self.window)
     
     def clear_entries(self):
         """Limpiar solo los campos de entrada sin deseleccionar la tabla."""
