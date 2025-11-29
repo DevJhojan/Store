@@ -56,6 +56,13 @@ class VentaService:
                     f"Disponible: {producto.cantidad}, Solicitado: {item.cantidad}."
                 ), None
         
+        # Generar número de factura si no tiene
+        if not venta.numero_factura:
+            venta.numero_factura = self.venta_repository.generar_numero_factura()
+        
+        # Calcular totales
+        venta.calcular_total()
+        
         # Realizar venta en transacción
         try:
             conn = sqlite3.connect(Settings.DATABASE_PATH)
@@ -64,22 +71,36 @@ class VentaService:
             try:
                 cursor = conn.cursor()
                 
-                # Insertar venta
+                # Obtener método de pago
+                metodo_pago_val = (
+                    venta.metodo_pago.value 
+                    if hasattr(venta.metodo_pago, 'value') 
+                    else str(venta.metodo_pago) if venta.metodo_pago else "Efectivo"
+                )
+                
+                # Insertar venta con todos los campos
                 cursor.execute(
-                    "INSERT INTO ventas (fecha, total) VALUES (?, ?)",
-                    (venta.fecha, venta.calcular_total())
+                    """INSERT INTO ventas 
+                       (numero_factura, fecha, cliente_id, subtotal, descuento_total, 
+                        impuesto_total, total, metodo_pago, observaciones)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (venta.numero_factura, venta.fecha, venta.cliente_id,
+                     venta.subtotal, venta.descuento_total, venta.impuesto_total,
+                     venta.total, metodo_pago_val, venta.observaciones)
                 )
                 venta_id = cursor.lastrowid
                 
                 # Insertar items y actualizar stock
                 for item in venta.items:
-                    # Insertar item
+                    # Insertar item con descuento e impuesto
                     cursor.execute(
                         """INSERT INTO items_venta 
-                           (venta_id, codigo_producto, nombre_producto, cantidad, precio_unitario, subtotal)
-                           VALUES (?, ?, ?, ?, ?, ?)""",
+                           (venta_id, codigo_producto, nombre_producto, cantidad, precio_unitario, 
+                            descuento, impuesto, subtotal)
+                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                         (venta_id, item.codigo_producto, item.nombre_producto,
-                         item.cantidad, item.precio_unitario, item.calcular_subtotal())
+                         item.cantidad, item.precio_unitario, item.descuento, item.impuesto,
+                         item.calcular_total())
                     )
                     
                     # Actualizar stock del producto
@@ -97,6 +118,8 @@ class VentaService:
                         raise ValueError(f"Stock negativo detectado para {item.codigo_producto}")
                 
                 conn.commit()
+                # Actualizar el ID de la venta en el objeto
+                venta.id = venta_id
                 return True, "Venta registrada exitosamente.", venta_id
                 
             except Exception as e:

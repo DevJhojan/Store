@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from datetime import datetime
 
 from ...config.settings import Settings
-from ..domain.models import Venta, ItemVenta
+from ..domain.models import Venta, ItemVenta, MetodoPago, MetodoPago
 
 
 class VentaRepository:
@@ -30,8 +30,16 @@ class VentaRepository:
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS ventas (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    numero_factura TEXT UNIQUE NOT NULL,
                     fecha TIMESTAMP NOT NULL,
-                    total REAL NOT NULL
+                    cliente_id INTEGER,
+                    subtotal REAL NOT NULL,
+                    descuento_total REAL NOT NULL DEFAULT 0,
+                    impuesto_total REAL NOT NULL DEFAULT 0,
+                    total REAL NOT NULL,
+                    metodo_pago TEXT NOT NULL,
+                    observaciones TEXT,
+                    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
                 )
             """)
             
@@ -44,10 +52,27 @@ class VentaRepository:
                     nombre_producto TEXT NOT NULL,
                     cantidad INTEGER NOT NULL,
                     precio_unitario REAL NOT NULL,
+                    descuento REAL NOT NULL DEFAULT 0,
+                    impuesto REAL NOT NULL DEFAULT 0,
                     subtotal REAL NOT NULL,
                     FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE
                 )
             """)
+            
+            # Tabla para configuración de numeración de facturas
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS configuracion_factura (
+                    clave TEXT PRIMARY KEY,
+                    valor TEXT NOT NULL
+                )
+            """)
+            
+            # Inicializar contador de facturas si no existe
+            cursor.execute("SELECT valor FROM configuracion_factura WHERE clave = 'ultimo_numero'")
+            if cursor.fetchone() is None:
+                cursor.execute(
+                    "INSERT INTO configuracion_factura (clave, valor) VALUES ('ultimo_numero', '0')"
+                )
             
             conn.commit()
     
@@ -59,6 +84,35 @@ class VentaRepository:
             yield conn
         finally:
             conn.close()
+    
+    def generar_numero_factura(self) -> str:
+        """
+        Genera el siguiente número de factura incremental.
+        
+        Returns:
+            str: Número de factura generado
+        """
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            
+            # Obtener último número
+            cursor.execute("SELECT valor FROM configuracion_factura WHERE clave = 'ultimo_numero'")
+            row = cursor.fetchone()
+            ultimo_numero = int(row[0]) if row else 0
+            
+            # Incrementar
+            nuevo_numero = ultimo_numero + 1
+            
+            # Actualizar
+            cursor.execute(
+                "UPDATE configuracion_factura SET valor = ? WHERE clave = 'ultimo_numero'",
+                (str(nuevo_numero),)
+            )
+            
+            conn.commit()
+            
+            # Formato: FACT-00001
+            return f"FACT-{nuevo_numero:05d}"
     
     def create(self, venta: Venta) -> int:
         """
@@ -73,10 +127,29 @@ class VentaRepository:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             
+            # Generar número de factura si no tiene
+            if not venta.numero_factura:
+                venta.numero_factura = self.generar_numero_factura()
+            
+            # Calcular totales
+            venta.calcular_total()
+            
+            # Obtener método de pago
+            metodo_pago_val = (
+                venta.metodo_pago.value 
+                if isinstance(venta.metodo_pago, MetodoPago) 
+                else str(venta.metodo_pago)
+            )
+            
             # Insertar venta
             cursor.execute(
-                "INSERT INTO ventas (fecha, total) VALUES (?, ?)",
-                (venta.fecha, venta.total)
+                """INSERT INTO ventas 
+                   (numero_factura, fecha, cliente_id, subtotal, descuento_total, 
+                    impuesto_total, total, metodo_pago, observaciones)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (venta.numero_factura, venta.fecha, venta.cliente_id,
+                 venta.subtotal, venta.descuento_total, venta.impuesto_total,
+                 venta.total, metodo_pago_val, venta.observaciones)
             )
             venta_id = cursor.lastrowid
             
@@ -84,10 +157,12 @@ class VentaRepository:
             for item in venta.items:
                 cursor.execute(
                     """INSERT INTO items_venta 
-                       (venta_id, codigo_producto, nombre_producto, cantidad, precio_unitario, subtotal)
-                       VALUES (?, ?, ?, ?, ?, ?)""",
+                       (venta_id, codigo_producto, nombre_producto, cantidad, precio_unitario, 
+                        descuento, impuesto, subtotal)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                     (venta_id, item.codigo_producto, item.nombre_producto,
-                     item.cantidad, item.precio_unitario, item.calcular_subtotal())
+                     item.cantidad, item.precio_unitario, item.descuento, item.impuesto,
+                     item.calcular_total())
                 )
             
             conn.commit()
@@ -106,18 +181,23 @@ class VentaRepository:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             
-            # Obtener venta
-            cursor.execute("SELECT id, fecha, total FROM ventas WHERE id = ?", (venta_id,))
+            # Obtener venta con todos los campos
+            cursor.execute("""
+                SELECT id, numero_factura, fecha, cliente_id, subtotal, descuento_total, 
+                       impuesto_total, total, metodo_pago, observaciones
+                FROM ventas WHERE id = ?
+            """, (venta_id,))
             venta_row = cursor.fetchone()
             
             if not venta_row:
                 return None
             
-            venta_id_db, fecha_str, total = venta_row
+            (venta_id_db, numero_factura, fecha_str, cliente_id, subtotal, 
+             descuento_total, impuesto_total, total, metodo_pago_str, observaciones) = venta_row
             
-            # Obtener items
+            # Obtener items con descuento e impuesto
             cursor.execute("""
-                SELECT codigo_producto, nombre_producto, cantidad, precio_unitario
+                SELECT codigo_producto, nombre_producto, cantidad, precio_unitario, descuento, impuesto
                 FROM items_venta
                 WHERE venta_id = ?
             """, (venta_id,))
@@ -128,7 +208,9 @@ class VentaRepository:
                     codigo_producto=row[0],
                     nombre_producto=row[1],
                     cantidad=row[2],
-                    precio_unitario=row[3]
+                    precio_unitario=row[3],
+                    descuento=row[4] if len(row) > 4 else 0.0,
+                    impuesto=row[5] if len(row) > 5 else 0.0
                 )
                 for row in items_data
             ]
@@ -139,7 +221,25 @@ class VentaRepository:
             else:
                 fecha = datetime.fromtimestamp(fecha_str) if fecha_str else datetime.now()
             
-            return Venta(id=venta_id_db, fecha=fecha, items=items, total=total)
+            # Parsear método de pago
+            try:
+                metodo_pago = MetodoPago(metodo_pago_str) if metodo_pago_str else MetodoPago.EFECTIVO
+            except (ValueError, AttributeError):
+                metodo_pago = MetodoPago.EFECTIVO
+            
+            return Venta(
+                id=venta_id_db,
+                numero_factura=numero_factura or "",
+                fecha=fecha,
+                items=items,
+                cliente_id=cliente_id,
+                subtotal=subtotal or 0.0,
+                descuento_total=descuento_total or 0.0,
+                impuesto_total=impuesto_total or 0.0,
+                total=total or 0.0,
+                metodo_pago=metodo_pago,
+                observaciones=observaciones or ""
+            )
     
     def get_all(self) -> List[Venta]:
         """

@@ -1,0 +1,4 @@
+# Requisitos para el Sistema de Gestión Store
+# Para generar PDFs de facturas
+reportlab>=4.0.0
+

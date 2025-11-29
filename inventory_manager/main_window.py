@@ -20,9 +20,23 @@ class MainWindow:
         """
         self.root = root
         self.root.title("🏪 Sistema de Gestión - Store")
-        self.root.geometry("600x500")
         self.root.configure(bg=COLORS["bg_darkest"])
-        self.root.resizable(False, False)
+        self.root.resizable(True, True)  # Permitir redimensionar
+        
+        # Maximizar la ventana principal (compatible con todos los sistemas)
+        try:
+            # Intentar maximizar en Linux
+            self.root.attributes('-zoomed', True)
+        except:
+            try:
+                # Intentar maximizar en Windows
+                self.root.state('zoomed')
+            except:
+                # Si nada funciona, obtener tamaño de pantalla y establecer geometría
+                self.root.update_idletasks()
+                width = self.root.winfo_screenwidth()
+                height = self.root.winfo_screenheight()
+                self.root.geometry(f"{width}x{height}")
         
         # Configurar estilos
         self.style_manager = StyleManager()
@@ -38,9 +52,9 @@ class MainWindow:
         """Crear todos los widgets de la ventana principal."""
         c = COLORS
         
-        # Frame principal
+        # Frame principal con scroll si es necesario
         main_frame = tk.Frame(self.root, bg=c["bg_darkest"])
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=50, pady=50)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=50, pady=30)
         
         # Título principal
         title_frame = tk.Frame(main_frame, bg=c["bg_darkest"])
@@ -70,7 +84,7 @@ class MainWindow:
         # Línea decorativa inferior
         tk.Frame(title_frame, bg=c["red_primary"], height=3).pack(fill=tk.X, pady=(15, 0))
         
-        # Frame para módulos
+        # Frame para módulos - usando pack para asegurar visibilidad
         modules_frame = tk.Frame(main_frame, bg=c["bg_darkest"])
         modules_frame.pack(fill=tk.BOTH, expand=True)
         
@@ -81,19 +95,20 @@ class MainWindow:
             "Administra productos, stock y precios del inventario.",
             self.open_inventory,
             c
-        )
+        ).pack(fill=tk.X, pady=(0, 15))
         
-        # Separador
-        tk.Frame(modules_frame, bg=c["bg_medium"], height=2).pack(fill=tk.X, pady=20, padx=20)
+        # Separador visible
+        separator = tk.Frame(modules_frame, bg=c["red_primary"], height=2)
+        separator.pack(fill=tk.X, pady=15, padx=20)
         
-        # Módulo de Ventas
+        # Módulo de Ventas - asegurar que sea visible
         self.create_module_card(
             modules_frame,
             "💰 GESTIÓN DE VENTAS",
             "Registra ventas y actualiza automáticamente el inventario.",
             self.open_sales,
             c
-        )
+        ).pack(fill=tk.X, pady=(0, 0))
         
         # Frame para footer
         footer_frame = tk.Frame(main_frame, bg=c["bg_darkest"])
@@ -110,10 +125,9 @@ class MainWindow:
     
     def create_module_card(self, parent: tk.Frame, title: str, description: str, 
                           command, colors: dict):
-        """Crea una tarjeta de módulo."""
+        """Crea una tarjeta de módulo y retorna el contenedor."""
         # Contenedor de tarjeta
         card_container = tk.Frame(parent, bg=colors["red_dark"], padx=2, pady=2)
-        card_container.pack(fill=tk.X, pady=5)
         
         card_frame = tk.Frame(card_container, bg=colors["bg_dark"], padx=30, pady=25)
         card_frame.pack(fill=tk.BOTH, expand=True)
@@ -148,6 +162,8 @@ class MainWindow:
             style="Accent.TButton"
         )
         btn.pack(anchor="w")
+        
+        return card_container
     
     def open_inventory(self):
         """Abre el módulo de Inventarios."""

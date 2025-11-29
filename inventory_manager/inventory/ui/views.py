@@ -31,9 +31,23 @@ class InventoryGUI:
         
         # Configurar ventana
         self.window.title("⚡ Gestión de Inventarios")
-        self.window.geometry(Settings.WINDOW_GEOMETRY)
         self.window.configure(bg=COLORS["bg_darkest"])
         self.window.resizable(True, True)
+        
+        # Maximizar la ventana (compatible con todos los sistemas)
+        try:
+            # Intentar maximizar en Linux
+            self.window.attributes('-zoomed', True)
+        except:
+            try:
+                # Intentar maximizar en Windows
+                self.window.state('zoomed')
+            except:
+                # Si nada funciona, obtener tamaño de pantalla y establecer geometría
+                self.window.update_idletasks()
+                width = self.window.winfo_screenwidth()
+                height = self.window.winfo_screenheight()
+                self.window.geometry(f"{width}x{height}")
         
         # Manejar cierre de ventana
         self.window.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -106,30 +120,25 @@ class InventoryGUI:
         
         self.create_buttons(button_frame)
         
-        # Frame para la tabla con borde rojo
-        table_container = tk.Frame(main_frame, bg=c["red_dark"], padx=2, pady=2)
-        table_container.pack(fill=tk.BOTH, expand=True)
+        # Frame contenedor horizontal para tabla y total flotante
+        table_and_total_container = tk.Frame(main_frame, bg=c["bg_darkest"])
+        table_and_total_container.pack(fill=tk.BOTH, expand=True, pady=(0, 0))
+        
+        # Frame para la tabla (lado izquierdo)
+        table_container = tk.Frame(table_and_total_container, bg=c["red_dark"], padx=2, pady=2)
+        table_container.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 15))
         
         table_frame = tk.Frame(table_container, bg=c["bg_dark"])
         table_frame.pack(fill=tk.BOTH, expand=True)
         
         self.create_table(table_frame)
         
-        # Frame para el valor total con borde rojo brillante
-        total_container = tk.Frame(main_frame, bg=c["red_primary"], padx=2, pady=2)
-        total_container.pack(fill=tk.X, pady=(15, 0))
+        # Frame para el valor total flotante (lado derecho)
+        total_floating_frame = tk.Frame(table_and_total_container, bg=c["bg_darkest"], width=280)
+        total_floating_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=(0, 0))
+        total_floating_frame.pack_propagate(False)  # Mantener ancho fijo
         
-        total_frame = tk.Frame(total_container, bg=c["bg_dark"], padx=20, pady=12)
-        total_frame.pack(fill=tk.BOTH, expand=True)
-        
-        self.total_label = tk.Label(
-            total_frame,
-            text="◈ VALOR TOTAL DEL INVENTARIO: $0.00",
-            font=(Settings.FONT_PRIMARY, Settings.FONT_SIZE_MEDIUM, "bold"),
-            fg=c["success"],
-            bg=c["bg_dark"]
-        )
-        self.total_label.pack()
+        self.create_floating_total_section(total_floating_frame)
     
     def create_form_fields(self, parent: tk.Frame):
         """Crear los campos del formulario."""
@@ -187,7 +196,6 @@ class InventoryGUI:
             ("✏️ Actualizar", self.update_product, "Secondary.TButton"),
             ("🗑️ Eliminar", self.delete_product, "Secondary.TButton"),
             ("🔄 Limpiar", self.clear_form, "Secondary.TButton"),
-            ("📊 Recalcular Total", self.update_total_value, "Secondary.TButton"),
         ]
         
         for text, command, style in buttons_info:
@@ -238,6 +246,62 @@ class InventoryGUI:
         
         # Evento de selección
         self.tree.bind("<<TreeviewSelect>>", self.on_select)
+    
+    def create_floating_total_section(self, parent: tk.Frame):
+        """Crea la ventana flotante del total al lado derecho de la tabla."""
+        c = COLORS
+        
+        # Frame contenedor del total flotante con borde
+        total_container = tk.Frame(parent, bg=c["red_primary"], padx=3, pady=3)
+        total_container.pack(side=tk.TOP, pady=(0, 0))
+        
+        total_inner = tk.Frame(total_container, bg=c["bg_dark"], padx=25, pady=30)
+        total_inner.pack(fill=tk.BOTH)
+        
+        # Título
+        tk.Label(
+            total_inner,
+            text="► RESUMEN DEL INVENTARIO",
+            font=(Settings.FONT_PRIMARY, Settings.FONT_SIZE_SMALL, "bold"),
+            fg=c["red_primary"],
+            bg=c["bg_dark"]
+        ).pack(anchor="w", pady=(0, 20))
+        
+        # Frame para el valor total
+        total_value_frame = tk.Frame(total_inner, bg=c["red_dark"], padx=2, pady=2)
+        total_value_frame.pack(fill=tk.X, pady=(0, 0))
+        
+        total_value_inner = tk.Frame(total_value_frame, bg=c["bg_darkest"], padx=20, pady=20)
+        total_value_inner.pack(fill=tk.BOTH)
+        
+        tk.Label(
+            total_value_inner,
+            text="VALOR TOTAL",
+            font=(Settings.FONT_PRIMARY, Settings.FONT_SIZE_SMALL),
+            fg=c["text_secondary"],
+            bg=c["bg_darkest"]
+        ).pack()
+        
+        self.total_label = tk.Label(
+            total_value_inner,
+            text="$0.00",
+            font=(Settings.FONT_PRIMARY, Settings.FONT_SIZE_LARGE, "bold"),
+            fg=c["success"],
+            bg=c["bg_darkest"]
+        )
+        self.total_label.pack(pady=(10, 0))
+        
+        # Línea decorativa
+        tk.Frame(total_inner, bg=c["bg_medium"], height=2).pack(fill=tk.X, pady=20)
+        
+        # Botón de recalculación dentro de la ventana flotante
+        btn_recalcular = ttk.Button(
+            total_inner,
+            text="🔄 Recalcular",
+            command=self.update_total_value,
+            style="Secondary.TButton"
+        )
+        btn_recalcular.pack(fill=tk.X, ipady=8)
     
     def load_products(self):
         """Cargar productos desde el servicio."""
@@ -419,6 +483,9 @@ class InventoryGUI:
     
     def update_total_value(self):
         """Calcular y mostrar el valor total del inventario."""
+        # Recargar productos desde la base de datos
+        self.load_products()
+        # Calcular y mostrar el total actualizado
         total = self.service.calcular_valor_total()
-        self.total_label.config(text=f"◈ VALOR TOTAL DEL INVENTARIO: ${total:,.2f}")
+        self.total_label.config(text=f"${total:,.2f}")
 
