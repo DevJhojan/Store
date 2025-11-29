@@ -1,4 +1,5 @@
 """Módulo de Inventarios."""
+from .ui.views import InventoryGUI
 
-__all__ = []
+__all__ = ["InventoryGUI"]
 

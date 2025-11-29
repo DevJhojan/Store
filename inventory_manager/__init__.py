@@ -12,6 +12,7 @@ from .domain import Producto
 from .services import InventoryService
 from .repository import ProductRepository
 from .main_window import MainWindow
+from .inventory.ui.views import InventoryGUI
 from .sales.ui.views import SalesGUI
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "InventoryService",
     "ProductRepository",
     "MainWindow",
+    "InventoryGUI",
     "SalesGUI",
 ]
 
