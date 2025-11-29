@@ -4,7 +4,6 @@ from tkinter import ttk
 
 from .config.settings import Settings, COLORS
 from .ui.styles import StyleManager
-from .inventory.ui.views import InventoryGUI
 from .sales.ui.views import SalesGUI
 
 
@@ -42,7 +41,6 @@ class MainWindow:
         self.style_manager = StyleManager()
         
         # Referencias a ventanas abiertas
-        self.inventory_window = None
         self.sales_window = None
         
         # Crear interfaz
@@ -88,20 +86,7 @@ class MainWindow:
         modules_frame = tk.Frame(main_frame, bg=c["bg_darkest"])
         modules_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Módulo de Inventarios
-        self.create_module_card(
-            modules_frame,
-            "📦 GESTIÓN DE INVENTARIOS",
-            "Administra productos, stock y precios del inventario.",
-            self.open_inventory,
-            c
-        ).pack(fill=tk.X, pady=(0, 15))
-        
-        # Separador visible
-        separator = tk.Frame(modules_frame, bg=c["red_primary"], height=2)
-        separator.pack(fill=tk.X, pady=15, padx=20)
-        
-        # Módulo de Ventas - asegurar que sea visible
+        # Módulo de Ventas
         self.create_module_card(
             modules_frame,
             "💰 GESTIÓN DE VENTAS",
@@ -165,22 +150,6 @@ class MainWindow:
         
         return card_container
     
-    def open_inventory(self):
-        """Abre el módulo de Inventarios."""
-        if self.inventory_window is None or not self.inventory_window.window.winfo_exists():
-            self.inventory_window = InventoryGUI(self.root)
-            # Configurar callback cuando se cierre
-            self.inventory_window.window.protocol(
-                "WM_DELETE_WINDOW",
-                lambda: self.on_inventory_close()
-            )
-            # Pasar referencia para notificaciones bidireccionales
-            if self.sales_window and hasattr(self.sales_window, 'window') and self.sales_window.window.winfo_exists():
-                self.sales_window.inventory_gui_ref = self.inventory_window
-        else:
-            self.inventory_window.window.lift()
-            self.inventory_window.window.focus()
-    
     def open_sales(self):
         """Abre el módulo de Ventas."""
         if self.sales_window is None or not self.sales_window.window.winfo_exists():
@@ -190,21 +159,9 @@ class MainWindow:
                 "WM_DELETE_WINDOW",
                 lambda: self.on_sales_close()
             )
-            # Pasar referencia al inventario si está abierto
-            if self.inventory_window and hasattr(self.inventory_window, 'window') and self.inventory_window.window.winfo_exists():
-                self.sales_window.inventory_gui_ref = self.inventory_window
         else:
             self.sales_window.window.lift()
             self.sales_window.window.focus()
-    
-    def on_inventory_close(self):
-        """Maneja el cierre de la ventana de inventarios."""
-        if self.inventory_window:
-            self.inventory_window.window.destroy()
-            self.inventory_window = None
-            # Limpiar referencia en ventas
-            if self.sales_window:
-                self.sales_window.inventory_gui_ref = None
     
     def on_sales_close(self):
         """Maneja el cierre de la ventana de ventas."""
