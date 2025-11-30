@@ -866,17 +866,30 @@ class CashClosureGUI:
         products_tree.column("ganancia_unit", width=80, anchor=tk.E)
         products_tree.column("subtotal", width=90, anchor=tk.E)
         
+        # Variables para calcular ganancia total
+        ganancia_total_venta = 0.0
+        
         # Agregar productos a la tabla
         for item in items:
-            # Calcular ganancia unitaria
+            # Calcular ganancia unitaria y total por item
             ganancia_unit = 0.0
+            ganancia_item_total = 0.0
+            precio_base = 0.0
+            
             try:
                 from ...repository.product_repository import ProductRepository
                 product_repo = ProductRepository()
                 producto = product_repo.get_by_code(item.codigo_producto)
                 if producto:
                     ganancia_unit = producto.calcular_ganancia_unitaria()
+                    precio_base = producto.precio_unitario
+                    # Ganancia total del item = ganancia unitaria * cantidad
+                    ganancia_item_total = ganancia_unit * item.cantidad
+                    ganancia_total_venta += ganancia_item_total
             except:
+                # Si no se puede obtener el producto, calcular ganancia aproximada
+                # precio_unitario en ItemVenta es valor_venta, así que necesitamos el precio_base
+                # Por ahora, si no hay producto, la ganancia será 0
                 pass
             
             subtotal_item = item.calcular_total()
@@ -892,6 +905,54 @@ class CashClosureGUI:
                     f"${subtotal_item:.2f}"
                 )
             )
+        
+        products_tree.grid(row=0, column=0, sticky="nsew")
+        
+        # Frame para resumen de ganancias (debajo de la tabla de productos)
+        ganancia_summary_frame = tk.Frame(self.detalle_content, bg=c["bg_dark"], relief=tk.RAISED, bd=1)
+        ganancia_summary_frame.pack(fill=tk.X, padx=10, pady=(10, 10))
+        
+        # Título del resumen de ganancias
+        ganancia_title = tk.Label(
+            ganancia_summary_frame,
+            text="💰 Resumen de Ganancias",
+            font=(Settings.FONT_PRIMARY, 11, "bold"),
+            fg=c["red_primary"],
+            bg=c["bg_dark"],
+            pady=5
+        )
+        ganancia_title.pack()
+        
+        # Información de ganancias
+        ganancia_info_frame = tk.Frame(ganancia_summary_frame, bg=c["bg_dark"])
+        ganancia_info_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
+        # Calcular otros totales
+        subtotal_venta = sum(item.calcular_subtotal() for item in items)
+        total_venta = sum(item.calcular_total() for item in items)
+        
+        # Mostrar ganancia total destacada
+        ganancia_total_label = tk.Label(
+            ganancia_info_frame,
+            text=f"Ganancia Total de la Venta: ${ganancia_total_venta:,.2f}",
+            font=(Settings.FONT_PRIMARY, 12, "bold"),
+            fg=c["red_primary"],
+            bg=c["bg_dark"]
+        )
+        ganancia_total_label.pack(anchor=tk.W, pady=5)
+        
+        # Mostrar información adicional
+        info_extra = tk.Label(
+            ganancia_info_frame,
+            text=f"Subtotal productos: ${subtotal_venta:,.2f}\n"
+                 f"Total venta: ${total_venta:,.2f}\n"
+                 f"Ganancia obtenida: ${ganancia_total_venta:,.2f}",
+            font=(Settings.FONT_PRIMARY, 10),
+            fg=c["text_secondary"],
+            bg=c["bg_dark"],
+            justify=tk.LEFT
+        )
+        info_extra.pack(anchor=tk.W, pady=(5, 0))
         
         # Forzar actualización del canvas
         self.detalle_content.update_idletasks()
