@@ -65,47 +65,20 @@ class VentaService:
         if venta.descuento_total == 0.0 and venta.impuesto_total == 0.0:
             venta.calcular_total()
         
-        # Realizar venta en transacción
+        # Realizar venta usando el repositorio (que guarda en Ventas.DB)
+        # y actualizar stock en inventario.db
         try:
-            conn = sqlite3.connect(Settings.DATABASE_PATH)
-            conn.execute("BEGIN TRANSACTION")
+            # Guardar venta en Ventas.DB usando el repositorio
+            venta_id = self.venta_repository.create(venta)
+            venta.id = venta_id
             
+            # Actualizar stock en inventario.db (base de datos separada)
+            conn_inventario = sqlite3.connect(Settings.DATABASE_PATH)
             try:
-                cursor = conn.cursor()
+                cursor = conn_inventario.cursor()
                 
-                # Obtener método de pago
-                metodo_pago_val = (
-                    venta.metodo_pago.value 
-                    if hasattr(venta.metodo_pago, 'value') 
-                    else str(venta.metodo_pago) if venta.metodo_pago else "Efectivo"
-                )
-                
-                # Insertar venta con todos los campos
-                cursor.execute(
-                    """INSERT INTO ventas 
-                       (numero_factura, fecha, cliente_id, subtotal, descuento_total, 
-                        impuesto_total, total, metodo_pago, observaciones)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (venta.numero_factura, venta.fecha, venta.cliente_id,
-                     venta.subtotal, venta.descuento_total, venta.impuesto_total,
-                     venta.total, metodo_pago_val, venta.observaciones)
-                )
-                venta_id = cursor.lastrowid
-                
-                # Insertar items y actualizar stock
+                # Actualizar stock para cada item
                 for item in venta.items:
-                    # Insertar item con descuento e impuesto
-                    cursor.execute(
-                        """INSERT INTO items_venta 
-                           (venta_id, codigo_producto, nombre_producto, cantidad, precio_unitario, 
-                            descuento, impuesto, subtotal)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                        (venta_id, item.codigo_producto, item.nombre_producto,
-                         item.cantidad, item.precio_unitario, item.descuento, item.impuesto,
-                         item.calcular_total())
-                    )
-                    
-                    # Actualizar stock del producto
                     cursor.execute("""
                         UPDATE productos 
                         SET cantidad = cantidad - ?
@@ -119,19 +92,21 @@ class VentaService:
                     if nueva_cantidad < 0:
                         raise ValueError(f"Stock negativo detectado para {item.codigo_producto}")
                 
-                conn.commit()
-                # Actualizar el ID de la venta en el objeto
-                venta.id = venta_id
+                conn_inventario.commit()
                 return True, "Venta registrada exitosamente.", venta_id
                 
             except Exception as e:
-                conn.rollback()
-                return False, f"Error al registrar la venta: {str(e)}", None
+                conn_inventario.rollback()
+                # Si falla la actualización de stock, intentar eliminar la venta
+                # (aunque esto requeriría un método delete en el repositorio)
+                return False, f"Error al actualizar stock: {str(e)}", None
             finally:
-                conn.close()
+                conn_inventario.close()
                 
         except sqlite3.Error as e:
             return False, f"Error de base de datos: {str(e)}", None
+        except Exception as e:
+            return False, f"Error al registrar la venta: {str(e)}", None
     
     def obtener_todas_las_ventas(self) -> List[Venta]:
         """

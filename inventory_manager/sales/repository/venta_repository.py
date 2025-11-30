@@ -18,7 +18,8 @@ class VentaRepository:
         Args:
             db_path: Ruta al archivo de base de datos SQLite
         """
-        self.db_path = db_path or Settings.DATABASE_PATH
+        # Usar Ventas.DB como base de datos por defecto para ventas
+        self.db_path = db_path or "Ventas.DB"
         self._init_database()
     
     def _init_database(self):
