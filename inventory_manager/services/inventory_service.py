@@ -40,8 +40,12 @@ class InventoryService:
             categoria=categoria.strip(),
             cantidad=cantidad,
             precio_unitario=precio_unitario,
-            ganancia=ganancia
+            ganancia=ganancia,
+            valor_venta=0.0  # Se calculará automáticamente
         )
+        
+        # Calcular valor de venta automáticamente
+        producto.valor_venta = producto.calcular_valor_venta()
         
         # Validar
         es_valido, mensaje_error = producto.validar()
@@ -82,8 +86,12 @@ class InventoryService:
             categoria=categoria.strip(),
             cantidad=cantidad,
             precio_unitario=precio_unitario,
-            ganancia=ganancia
+            ganancia=ganancia,
+            valor_venta=0.0  # Se calculará automáticamente
         )
+        
+        # Calcular valor de venta automáticamente
+        producto.valor_venta = producto.calcular_valor_venta()
         
         # Validar
         es_valido, mensaje_error = producto.validar()

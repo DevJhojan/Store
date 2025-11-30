@@ -940,10 +940,14 @@ class SalesGUI:
         for widget in self.product_info_frame.winfo_children():
             widget.destroy()
         
+        # Asegurar que valor_venta esté calculado
+        if producto.valor_venta == 0.0:
+            producto.valor_venta = producto.calcular_valor_venta()
+        
         info_text = (
             f"Nombre: {producto.nombre} | "
             f"Categoría: {producto.categoria} | "
-            f"Precio: ${producto.precio_unitario:.2f} | "
+            f"Valor de Venta: ${producto.valor_venta:.2f} | "
             f"Stock disponible: {producto.cantidad}"
         )
         
@@ -1017,12 +1021,16 @@ class SalesGUI:
                 self.actualizar_carrito()
                 return
         
-        # Agregar nuevo item
+        # Asegurar que valor_venta esté calculado
+        if self.producto_seleccionado.valor_venta == 0.0:
+            self.producto_seleccionado.valor_venta = self.producto_seleccionado.calcular_valor_venta()
+        
+        # Agregar nuevo item usando valor_venta (no precio_unitario)
         item = ItemVenta(
             codigo_producto=self.producto_seleccionado.codigo,
             nombre_producto=self.producto_seleccionado.nombre,
             cantidad=cantidad,
-            precio_unitario=self.producto_seleccionado.precio_unitario
+            precio_unitario=self.producto_seleccionado.valor_venta
         )
         
         self.venta_actual.agregar_item(item)

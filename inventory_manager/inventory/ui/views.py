@@ -363,7 +363,7 @@ class InventoryGUI:
         
         # Treeview (tabla)
         columns = ("codigo", "nombre", "categoria", "cantidad", "precio_unitario", 
-                  "ganancia_unit", "valor_base", "valor_ganancia", "subtotal")
+                  "ganancia_unit", "valor_venta", "valor_base", "valor_ganancia", "subtotal")
         
         self.tree = ttk.Treeview(
             table_container,
@@ -384,6 +384,7 @@ class InventoryGUI:
         self.tree.heading("cantidad", text="Cantidad")
         self.tree.heading("precio_unitario", text="Precio Unit.")
         self.tree.heading("ganancia_unit", text="Ganancia Unit.")
+        self.tree.heading("valor_venta", text="Valor de Venta")
         self.tree.heading("valor_base", text="Valor Base")
         self.tree.heading("valor_ganancia", text="Valor Ganancia")
         self.tree.heading("subtotal", text="Subtotal")
@@ -395,6 +396,7 @@ class InventoryGUI:
         self.tree.column("cantidad", width=80, anchor=tk.CENTER)
         self.tree.column("precio_unitario", width=100, anchor=tk.E)
         self.tree.column("ganancia_unit", width=110, anchor=tk.E)
+        self.tree.column("valor_venta", width=110, anchor=tk.E)
         self.tree.column("valor_base", width=100, anchor=tk.E)
         self.tree.column("valor_ganancia", width=120, anchor=tk.E)
         self.tree.column("subtotal", width=100, anchor=tk.E)
@@ -554,7 +556,7 @@ class InventoryGUI:
         item = self.tree.item(selection[0])
         valores = item['values']
         
-        if len(valores) >= 5:
+        if len(valores) >= 6:
             codigo = valores[0]
             self.producto_seleccionado = codigo
             
@@ -805,6 +807,10 @@ class InventoryGUI:
             # Calcular ganancia unitaria
             ganancia_unit = producto.precio_unitario * (ganancia / 100.0)
             
+            # Asegurar que valor_venta esté calculado
+            if producto.valor_venta == 0.0:
+                producto.valor_venta = producto.calcular_valor_venta()
+            
             # Agregar a tabla
             self.tree.insert(
                 "",
@@ -816,6 +822,7 @@ class InventoryGUI:
                     producto.cantidad,
                     f"${producto.precio_unitario:.2f}",
                     f"${ganancia_unit:.2f}",
+                    f"${producto.valor_venta:.2f}",
                     f"${valor_base:.2f}",
                     f"${valor_ganancia:.2f}",
                     f"${subtotal:.2f}"
