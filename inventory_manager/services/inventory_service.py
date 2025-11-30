@@ -18,7 +18,7 @@ class InventoryService:
         self.repository = repository or ProductRepository()
     
     def agregar_producto(self, codigo: str, nombre: str, categoria: str, 
-                        cantidad: int, precio_unitario: float) -> Tuple[bool, str]:
+                        cantidad: int, precio_unitario: float, ganancia: float = 0.0) -> Tuple[bool, str]:
         """
         Agrega un nuevo producto al inventario.
         
@@ -28,6 +28,7 @@ class InventoryService:
             categoria: Categoría del producto
             cantidad: Cantidad disponible
             precio_unitario: Precio unitario
+            ganancia: Porcentaje de ganancia (default: 0.0)
             
         Returns:
             Tuple[bool, str]: (exitoso, mensaje)
@@ -38,7 +39,8 @@ class InventoryService:
             nombre=nombre.strip(),
             categoria=categoria.strip(),
             cantidad=cantidad,
-            precio_unitario=precio_unitario
+            precio_unitario=precio_unitario,
+            ganancia=ganancia
         )
         
         # Validar
@@ -57,7 +59,7 @@ class InventoryService:
             return False, "Error al agregar el producto."
     
     def actualizar_producto(self, codigo_original: str, codigo: str, nombre: str, 
-                           categoria: str, cantidad: int, precio_unitario: float) -> Tuple[bool, str]:
+                           categoria: str, cantidad: int, precio_unitario: float, ganancia: float = 0.0) -> Tuple[bool, str]:
         """
         Actualiza un producto existente.
         
@@ -68,6 +70,7 @@ class InventoryService:
             categoria: Nueva categoría
             cantidad: Nueva cantidad
             precio_unitario: Nuevo precio unitario
+            ganancia: Porcentaje de ganancia (default: 0.0)
             
         Returns:
             Tuple[bool, str]: (exitoso, mensaje)
@@ -78,7 +81,8 @@ class InventoryService:
             nombre=nombre.strip(),
             categoria=categoria.strip(),
             cantidad=cantidad,
-            precio_unitario=precio_unitario
+            precio_unitario=precio_unitario,
+            ganancia=ganancia
         )
         
         # Validar

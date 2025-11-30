@@ -11,6 +11,7 @@ class Producto:
     categoria: str
     cantidad: int
     precio_unitario: float
+    ganancia: float = 0.0  # Porcentaje de ganancia
     
     def calcular_subtotal(self) -> float:
         """Calcula el subtotal del producto (cantidad * precio_unitario)."""
@@ -38,6 +39,9 @@ class Producto:
         if self.precio_unitario < 0:
             return False, "El precio unitario debe ser mayor o igual a 0."
         
+        if self.ganancia < 0:
+            return False, "La ganancia debe ser mayor o igual a 0."
+        
         return True, None
     
     def to_dict(self) -> dict:
@@ -47,7 +51,8 @@ class Producto:
             "nombre": self.nombre,
             "categoria": self.categoria,
             "cantidad": self.cantidad,
-            "precio_unitario": self.precio_unitario
+            "precio_unitario": self.precio_unitario,
+            "ganancia": self.ganancia
         }
     
     @classmethod
@@ -58,17 +63,25 @@ class Producto:
             nombre=data["nombre"],
             categoria=data["categoria"],
             cantidad=data["cantidad"],
-            precio_unitario=data["precio_unitario"]
+            precio_unitario=data["precio_unitario"],
+            ganancia=data.get("ganancia", 0.0)
         )
     
     @classmethod
     def from_tuple(cls, data: tuple) -> "Producto":
         """Crea un producto desde una tupla de la base de datos."""
+        # Manejar compatibilidad con bases de datos antiguas (sin ganancia)
+        if len(data) >= 6:
+            ganancia = data[5]
+        else:
+            ganancia = 0.0
+        
         return cls(
             codigo=data[0],
             nombre=data[1],
             categoria=data[2],
             cantidad=data[3],
-            precio_unitario=data[4]
+            precio_unitario=data[4],
+            ganancia=ganancia
         )
 

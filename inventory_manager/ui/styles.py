@@ -73,16 +73,37 @@ class StyleManager:
             background=[("active", c["bg_light"]), ("pressed", c["bg_dark"])]
         )
         
-        # Estilo para scrollbar
+        # Estilo para scrollbar vertical (negro con acentos rojos)
         self.style.configure(
             "Custom.Vertical.TScrollbar",
             background=c["bg_medium"],
-            troughcolor=c["bg_dark"],
-            borderwidth=0,
-            arrowcolor=c["red_primary"]
+            troughcolor=c["bg_darkest"],
+            borderwidth=1,
+            arrowcolor=c["red_primary"],
+            darkcolor=c["bg_dark"],
+            lightcolor=c["bg_dark"]
         )
         self.style.map(
             "Custom.Vertical.TScrollbar",
-            background=[("active", c["red_primary"])]
+            background=[("active", c["red_primary"]), ("pressed", c["red_dark"])],
+            arrowcolor=[("active", c["red_bright"])],
+            troughcolor=[("active", c["bg_darkest"])]
+        )
+        
+        # Estilo para scrollbar horizontal (negro con acentos rojos)
+        self.style.configure(
+            "Custom.Horizontal.TScrollbar",
+            background=c["bg_medium"],
+            troughcolor=c["bg_darkest"],
+            borderwidth=1,
+            arrowcolor=c["red_primary"],
+            darkcolor=c["bg_dark"],
+            lightcolor=c["bg_dark"]
+        )
+        self.style.map(
+            "Custom.Horizontal.TScrollbar",
+            background=[("active", c["red_primary"]), ("pressed", c["red_dark"])],
+            arrowcolor=[("active", c["red_bright"])],
+            troughcolor=[("active", c["bg_darkest"])]
         )
 

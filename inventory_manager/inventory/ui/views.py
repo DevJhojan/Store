@@ -278,13 +278,18 @@ class InventoryGUI:
         self.ganancia_entry.grid(row=3, column=2, sticky="ew", padx=0, pady=(0, 0))
         self.ganancia_entry.insert(0, "0")
         
+        # Vincular eventos para cálculo automático
+        self.entries["cantidad"].bind("<KeyRelease>", self.on_calculo_cambio)
+        self.entries["precio_unitario"].bind("<KeyRelease>", self.on_calculo_cambio)
+        self.ganancia_entry.bind("<KeyRelease>", self.on_calculo_cambio)
+        
         # ========== BARRA DE BOTONES ==========
         buttons_frame = tk.Frame(main_frame, bg=c["bg_darkest"])
         buttons_frame.grid(row=1, column=1, sticky="ew", padx=0, pady=(0, 15))
         
         btn_agregar = ttk.Button(
             buttons_frame,
-            text="Agregar",
+            text="➕ Agregar",
             command=self.agregar_producto,
             style="Accent.TButton"
         )
@@ -292,7 +297,7 @@ class InventoryGUI:
         
         btn_actualizar = ttk.Button(
             buttons_frame,
-            text="Actualizar",
+            text="✏️ Actualizar",
             command=self.actualizar_producto,
             style="Accent.TButton"
         )
@@ -300,7 +305,7 @@ class InventoryGUI:
         
         btn_eliminar = ttk.Button(
             buttons_frame,
-            text="Eliminar",
+            text="🗑️ Eliminar",
             command=self.eliminar_producto,
             style="Accent.TButton"
         )
@@ -308,7 +313,7 @@ class InventoryGUI:
         
         btn_limpiar = ttk.Button(
             buttons_frame,
-            text="Limpiar",
+            text="🧹 Limpiar",
             command=self.limpiar_formulario,
             style="Secondary.TButton"
         )
@@ -317,12 +322,13 @@ class InventoryGUI:
         # ========== SECCIÓN INFERIOR (Tabla y Resumen) ==========
         bottom_frame = tk.Frame(main_frame, bg=c["bg_darkest"])
         bottom_frame.grid(row=2, column=1, sticky="nsew", padx=0, pady=0)
-        bottom_frame.grid_columnconfigure(0, weight=3)  # Tabla (más espacio)
-        bottom_frame.grid_columnconfigure(1, weight=1)  # Resumen (menos espacio)
+        bottom_frame.grid_columnconfigure(0, weight=1)  # Ambos toman todo el ancho
+        bottom_frame.grid_rowconfigure(0, weight=1)  # Tabla expandible
+        bottom_frame.grid_rowconfigure(1, weight=0)  # Resumen fijo
         
-        # Panel izquierdo: Tabla de datos
+        # Tabla de datos (arriba, ancho completo)
         table_frame = tk.Frame(bottom_frame, bg=c["bg_dark"], relief=tk.RAISED, bd=2)
-        table_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 10), pady=0)
+        table_frame.grid(row=0, column=0, sticky="nsew", padx=0, pady=(0, 10))
         table_frame.grid_columnconfigure(0, weight=1)
         table_frame.grid_rowconfigure(0, weight=1)
         
@@ -340,16 +346,24 @@ class InventoryGUI:
         table_container = tk.Frame(table_frame, bg=c["bg_dark"])
         table_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
         
-        # Scrollbars
-        v_scrollbar = ttk.Scrollbar(table_container, orient=tk.VERTICAL)
+        # Scrollbars con estilo personalizado
+        v_scrollbar = ttk.Scrollbar(
+            table_container,
+            orient=tk.VERTICAL,
+            style="Custom.Vertical.TScrollbar"
+        )
         v_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        h_scrollbar = ttk.Scrollbar(table_container, orient=tk.HORIZONTAL)
+        h_scrollbar = ttk.Scrollbar(
+            table_container,
+            orient=tk.HORIZONTAL,
+            style="Custom.Horizontal.TScrollbar"
+        )
         h_scrollbar.pack(side=tk.BOTTOM, fill=tk.X)
         
         # Treeview (tabla)
         columns = ("codigo", "nombre", "categoria", "cantidad", "precio_unitario", 
-                  "valor_base", "valor_ganancia", "subtotal")
+                  "ganancia_unit", "valor_base", "valor_ganancia", "subtotal")
         
         self.tree = ttk.Treeview(
             table_container,
@@ -369,6 +383,7 @@ class InventoryGUI:
         self.tree.heading("categoria", text="Categoría")
         self.tree.heading("cantidad", text="Cantidad")
         self.tree.heading("precio_unitario", text="Precio Unit.")
+        self.tree.heading("ganancia_unit", text="Ganancia Unit.")
         self.tree.heading("valor_base", text="Valor Base")
         self.tree.heading("valor_ganancia", text="Valor Ganancia")
         self.tree.heading("subtotal", text="Subtotal")
@@ -379,6 +394,7 @@ class InventoryGUI:
         self.tree.column("categoria", width=120, anchor=tk.W)
         self.tree.column("cantidad", width=80, anchor=tk.CENTER)
         self.tree.column("precio_unitario", width=100, anchor=tk.E)
+        self.tree.column("ganancia_unit", width=110, anchor=tk.E)
         self.tree.column("valor_base", width=100, anchor=tk.E)
         self.tree.column("valor_ganancia", width=120, anchor=tk.E)
         self.tree.column("subtotal", width=100, anchor=tk.E)
@@ -388,23 +404,40 @@ class InventoryGUI:
         # Evento de selección
         self.tree.bind("<<TreeviewSelect>>", self.on_producto_seleccionado)
         
-        # Panel derecho: Resumen total
+        # Resumen total (abajo, ancho completo)
         summary_frame = tk.Frame(bottom_frame, bg=c["bg_dark"], relief=tk.RAISED, bd=2)
-        summary_frame.grid(row=0, column=1, sticky="nsew", padx=0, pady=0)
+        summary_frame.grid(row=1, column=0, sticky="ew", padx=0, pady=0)
+        summary_frame.grid_columnconfigure(1, weight=1)  # El contenido toma el espacio
         
+        # Frame para botón y título
+        summary_header = tk.Frame(summary_frame, bg=c["bg_dark"])
+        summary_header.pack(fill=tk.X, padx=15, pady=15)
+        
+        # Botón Recalcular (solo icono, a la izquierda)
+        btn_recalcular = ttk.Button(
+            summary_header,
+            text="🔄",
+            command=self.recalcular,
+            style="Accent.TButton"
+        )
+        btn_recalcular.pack(side=tk.LEFT, padx=(0, 10))
+        
+        # Tooltip para el botón
+        self.create_tooltip(btn_recalcular, "Recalcular datos")
+        
+        # Título del resumen
         summary_title = tk.Label(
-            summary_frame,
+            summary_header,
             text="Resumen Total",
             font=(Settings.FONT_PRIMARY, 12, "bold"),
             fg=c["red_primary"],
-            bg=c["bg_dark"],
-            pady=15
+            bg=c["bg_dark"]
         )
-        summary_title.pack()
+        summary_title.pack(side=tk.LEFT)
         
         # Contenedor de resumen
         summary_content = tk.Frame(summary_frame, bg=c["bg_dark"])
-        summary_content.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        summary_content.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
         
         # Labels de resumen
         self.total_productos_label = tk.Label(
@@ -453,6 +486,47 @@ class InventoryGUI:
         
         # Generar código inicial
         self.limpiar_formulario()
+    
+    def create_tooltip(self, widget, text):
+        """Crea un tooltip para un widget."""
+        c = COLORS
+        
+        def on_enter(event):
+            tooltip = tk.Toplevel()
+            tooltip.wm_overrideredirect(True)
+            tooltip.wm_geometry(f"+{event.x_root+10}+{event.y_root+10}")
+            label = tk.Label(
+                tooltip,
+                text=text,
+                background=c["bg_medium"],
+                foreground=c["text_primary"],
+                relief=tk.SOLID,
+                borderwidth=1,
+                font=(Settings.FONT_PRIMARY, 9),
+                padx=5,
+                pady=3
+            )
+            label.pack()
+            widget.tooltip = tooltip
+        
+        def on_leave(event):
+            if hasattr(widget, 'tooltip'):
+                widget.tooltip.destroy()
+                del widget.tooltip
+        
+        widget.bind('<Enter>', on_enter)
+        widget.bind('<Leave>', on_leave)
+    
+    def recalcular(self):
+        """Recalcula todos los valores de la tabla y el resumen."""
+        self.refresh()
+        messagebox.showinfo("Recalculado", "Los valores han sido recalculados correctamente.", parent=self.window)
+    
+    def on_calculo_cambio(self, event=None):
+        """Recalcula los valores cuando cambian cantidad, precio o ganancia."""
+        # Este método puede usarse para mostrar cálculos en tiempo real si se desea
+        # Por ahora, los cálculos se hacen al guardar y mostrar en la tabla
+        pass
     
     def calcular_valores_producto(self, cantidad: int, precio_unitario: float, ganancia: float) -> tuple:
         """
@@ -509,21 +583,9 @@ class InventoryGUI:
                 self.entries["precio_unitario"].delete(0, tk.END)
                 self.entries["precio_unitario"].insert(0, str(producto.precio_unitario))
                 
-                # Calcular ganancia desde los valores de la tabla si están disponibles
-                if len(valores) >= 8:
-                    try:
-                        valor_base = float(valores[5])
-                        valor_ganancia = float(valores[6])
-                        if valor_base > 0:
-                            ganancia_calculada = (valor_ganancia / valor_base) * 100
-                            self.ganancia_entry.delete(0, tk.END)
-                            self.ganancia_entry.insert(0, f"{ganancia_calculada:.2f}")
-                    except (ValueError, IndexError):
-                        self.ganancia_entry.delete(0, tk.END)
-                        self.ganancia_entry.insert(0, "0")
-                else:
-                    self.ganancia_entry.delete(0, tk.END)
-                    self.ganancia_entry.insert(0, "0")
+                # Cargar ganancia del producto
+                self.ganancia_entry.delete(0, tk.END)
+                self.ganancia_entry.insert(0, f"{producto.ganancia:.2f}")
     
     def agregar_producto(self):
         """Agrega un nuevo producto al inventario."""
@@ -577,7 +639,8 @@ class InventoryGUI:
             nombre=self.entries["nombre"].get().strip(),
             categoria=self.entries["categoria"].get().strip(),
             cantidad=cantidad,
-            precio_unitario=precio
+            precio_unitario=precio,
+            ganancia=ganancia
         )
         
         if exito:
@@ -625,6 +688,13 @@ class InventoryGUI:
             messagebox.showerror("Error", f"Precio unitario: {error_precio}", parent=self.window)
             return
         
+        # Parsear ganancia
+        ganancia_ok, ganancia, error_ganancia = parse_numeric_field(
+            self.ganancia_entry.get(), float
+        )
+        if not ganancia_ok:
+            ganancia = 0.0
+        
         codigo_original = self.producto_seleccionado
         codigo_nuevo = self.entries["codigo"].get().strip()
         
@@ -635,7 +705,8 @@ class InventoryGUI:
             nombre=self.entries["nombre"].get().strip(),
             categoria=self.entries["categoria"].get().strip(),
             cantidad=cantidad,
-            precio_unitario=precio
+            precio_unitario=precio,
+            ganancia=ganancia
         )
         
         if exito:
@@ -721,15 +792,8 @@ class InventoryGUI:
         
         # Agregar productos a la tabla
         for producto in productos:
-            # Obtener ganancia (por defecto 0 si no se puede calcular)
-            ganancia = 0.0
-            try:
-                # Intentar obtener ganancia desde algún almacenamiento
-                # Por ahora, usaremos 0 como predeterminado
-                # En una implementación real, podrías almacenar la ganancia en la BD
-                pass
-            except:
-                ganancia = 0.0
+            # Usar ganancia del producto
+            ganancia = producto.ganancia
             
             # Calcular valores
             valor_base, valor_ganancia, subtotal = self.calcular_valores_producto(
@@ -737,6 +801,9 @@ class InventoryGUI:
                 producto.precio_unitario,
                 ganancia
             )
+            
+            # Calcular ganancia unitaria
+            ganancia_unit = producto.precio_unitario * (ganancia / 100.0)
             
             # Agregar a tabla
             self.tree.insert(
@@ -748,6 +815,7 @@ class InventoryGUI:
                     producto.categoria,
                     producto.cantidad,
                     f"${producto.precio_unitario:.2f}",
+                    f"${ganancia_unit:.2f}",
                     f"${valor_base:.2f}",
                     f"${valor_ganancia:.2f}",
                     f"${subtotal:.2f}"
