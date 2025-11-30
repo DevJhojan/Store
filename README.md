@@ -1,36 +1,59 @@
-# Sistema de Gestión de Inventarios
+# Sistema de Gestión de Ventas - Store
 
-Sistema completo de gestión de inventarios con interfaz gráfica desarrollado con Python y tkinter, siguiendo principios de Clean Architecture.
+Sistema completo de gestión de ventas con interfaz gráfica desarrollado con Python y tkinter, siguiendo principios de Clean Architecture. Incluye gestión de inventarios, ventas, clientes y cierre de caja con almacenamiento local.
 
 ## Características
 
 - ✨ Interfaz gráfica moderna con tema dark y acentos rojos
-- 📦 Gestión completa de productos (CRUD)
-- 💾 Almacenamiento persistente con SQLite
-- 🧮 Cálculo automático del valor total del inventario
+- 📦 **Gestión de Inventarios**: Administración completa de productos (CRUD), control de stock y precios
+- 💰 **Gestión de Ventas**: Registro de ventas con actualización automática de inventario, gestión de clientes y gastos
+- 💵 **Cierre de Caja**: Consulta y análisis de ventas con filtros avanzados por fecha, cliente y producto
+- 📄 **Generación de Facturas**: Creación automática de facturas en formato PDF
+- 💾 **Almacenamiento Local**: Persistencia de datos con SQLite (sin dependencias de servidor)
+- 🧮 Cálculo automático del valor total del inventario y totales de ventas
 - 🏗️ Arquitectura modular y mantenible
+- 🔗 Acceso directo al repositorio de GitHub desde la aplicación
 
 ## Estructura del Proyecto
 
 ```
 inventory_manager/
 ├── __init__.py              # Paquete principal
+├── main_window.py           # Ventana principal del sistema
 ├── config/                  # Configuración
 │   ├── __init__.py
 │   └── settings.py          # Settings y paleta de colores
-├── domain/                  # Modelos de dominio
+├── domain/                  # Modelos de dominio compartidos
 │   ├── __init__.py
-│   └── models.py            # Modelo Producto
-├── repository/              # Acceso a datos
+│   └── models.py            # Modelos base
+├── inventory/               # Módulo de Inventarios
+│   ├── domain/              # Modelos de inventario
+│   ├── repository/          # Repositorio de productos
+│   ├── services/            # Servicios de inventario
+│   └── ui/                  # Interfaz de inventario
+│       └── views.py
+├── sales/                   # Módulo de Ventas
+│   ├── domain/              # Modelos de ventas, clientes
+│   ├── repository/          # Repositorios de ventas, clientes, gastos
+│   ├── services/            # Servicios de ventas
+│   └── ui/                  # Interfaz de ventas
+│       ├── views.py
+│       └── pdf_generator.py # Generador de facturas PDF
+├── cash_closure/            # Módulo de Cierre de Caja
+│   ├── repository/          # Repositorio de consultas
+│   ├── services/            # Servicios de cierre
+│   └── ui/                  # Interfaz de cierre
+│       └── views.py
+├── repository/              # Repositorios compartidos
 │   ├── __init__.py
-│   └── product_repository.py # Repositorio SQLite
-├── services/                # Lógica de negocio
+│   └── product_repository.py
+├── services/                # Servicios compartidos
 │   ├── __init__.py
-│   └── inventory_service.py # Servicio de inventario
-├── ui/                      # Interfaz de usuario
+│   └── inventory_service.py
+├── ui/                      # Componentes UI compartidos
 │   ├── __init__.py
 │   ├── styles.py            # Gestor de estilos
-│   └── views.py             # Vista principal
+│   └── views.py             # Vistas compartidas
 └── utils/                   # Utilidades
     ├── __init__.py
     └── validators.py        # Validadores de campos
@@ -58,12 +81,46 @@ python main.py
 python main.py
 ```
 
+La aplicación se abrirá con una ventana principal desde la cual podrás acceder a los diferentes módulos:
+
+- **📦 Gestión de Inventarios**: Administra productos, stock y precios
+- **💰 Gestión de Ventas**: Registra ventas, gestiona clientes y genera facturas
+- **💵 Cierre de Caja**: Consulta y analiza todas las ventas registradas
+
+### Módulos Principales
+
+#### Gestión de Inventarios
+- Agregar, editar y eliminar productos
+- Control de stock y precios
+- Búsqueda y filtrado de productos
+- Cálculo automático del valor total del inventario
+
+#### Gestión de Ventas
+- Registro de ventas con múltiples productos
+- Actualización automática del inventario al realizar ventas
+- Gestión de clientes
+- Registro de gastos
+- Generación de facturas en PDF
+
+#### Cierre de Caja
+- Consulta de todas las ventas registradas
+- Filtros avanzados por fecha, cliente y producto
+- Análisis de ventas y totales
+- Exportación de datos
+
 ### Uso programático
 
 ```python
-from inventory_manager import InventoryService, Producto
+from inventory_manager import (
+    InventoryService, 
+    Producto,
+    MainWindow,
+    InventoryGUI,
+    SalesGUI,
+    CashClosureGUI
+)
 
-# Crear servicio
+# Crear servicio de inventario
 service = InventoryService()
 
 # Agregar producto
@@ -101,12 +158,20 @@ El proyecto sigue los principios de **Clean Architecture**:
 
 ### Estructura de módulos
 
-- **Domain**: Contiene los modelos de datos (`Producto`)
-- **Repository**: Maneja el acceso a la base de datos SQLite
-- **Services**: Contiene la lógica de negocio (validaciones, operaciones CRUD)
-- **UI**: Interfaz gráfica con tkinter
+- **Domain**: Contiene los modelos de datos (Producto, Venta, Cliente, etc.)
+- **Repository**: Maneja el acceso a las bases de datos SQLite locales
+- **Services**: Contiene la lógica de negocio (validaciones, operaciones CRUD, cálculos)
+- **UI**: Interfaz gráfica con tkinter, organizada por módulos
 - **Config**: Configuración centralizada (colores, fuentes, settings)
-- **Utils**: Utilidades reutilizables (validadores)
+- **Utils**: Utilidades reutilizables (validadores, generadores de PDF)
+
+### Almacenamiento Local
+
+El sistema utiliza bases de datos SQLite locales para el almacenamiento:
+- `inventario.db`: Base de datos de productos e inventario
+- `Ventas.DB`: Base de datos de ventas, clientes y gastos
+
+Todos los datos se almacenan localmente sin necesidad de conexión a servidor externo.
 
 ## Licencia
 
