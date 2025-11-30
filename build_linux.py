@@ -18,13 +18,34 @@ def build_linux_executable():
         print("❌ PyInstaller no está instalado. Instalando...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "pyinstaller"])
     
+    # Verificar que el archivo .spec existe
+    if not os.path.exists("pyinstaller_linux.spec"):
+        print("❌ Archivo pyinstaller_linux.spec no encontrado.")
+        print("💡 Creando archivo .spec...")
+        # Crear el archivo .spec usando PyInstaller
+        subprocess.check_call([
+            "pyinstaller",
+            "--name=StoreManagement",
+            "--onefile",
+            "--windowed",
+            "--add-data=inventory_manager:inventory_manager",
+            "--hidden-import=tkinter",
+            "--hidden-import=sqlite3",
+            "--hidden-import=reportlab",
+            "--hidden-import=PIL",
+            "--collect-all=tkinter",
+            "--specpath=.",
+            "main.py"
+        ])
+        # Renombrar el spec generado
+        if os.path.exists("main.spec"):
+            os.rename("main.spec", "pyinstaller_linux.spec")
+    
     # Limpiar builds anteriores
     if os.path.exists("build"):
         shutil.rmtree("build")
     if os.path.exists("dist"):
         shutil.rmtree("dist")
-    if os.path.exists("main.spec"):
-        os.remove("main.spec")
     
     # Comando de PyInstaller para Linux
     # Usar el archivo .spec para mejor control
@@ -37,9 +58,13 @@ def build_linux_executable():
     print("📦 Ejecutando PyInstaller...")
     subprocess.check_call(cmd)
     
-    print("✅ Ejecutable creado en: dist/StoreManagement")
-    print("📁 El archivo está listo para distribuir")
-    print("💡 Para hacer ejecutable: chmod +x dist/StoreManagement")
+    # Hacer ejecutable
+    if os.path.exists("dist/StoreManagement"):
+        os.chmod("dist/StoreManagement", 0o755)
+        print("✅ Ejecutable creado en: dist/StoreManagement")
+        print("📁 El archivo está listo para distribuir")
+    else:
+        print("⚠️  El ejecutable no se creó correctamente. Revisa los errores arriba.")
 
 def build_deb_package():
     """Construye un paquete .deb para distribuciones basadas en Debian."""

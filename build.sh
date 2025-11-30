@@ -16,14 +16,22 @@ if ! python3 -c "import PyInstaller" 2>/dev/null; then
 fi
 
 # Limpiar builds anteriores
-rm -rf build dist *.spec
+rm -rf build dist
+
+# Verificar que el archivo .spec existe
+if [ ! -f "pyinstaller_linux.spec" ]; then
+    echo "❌ Archivo pyinstaller_linux.spec no encontrado. Creándolo..."
+    python3 build_linux.py --spec-only
+fi
 
 # Construir ejecutable
 echo "📦 Construyendo ejecutable..."
 pyinstaller --clean pyinstaller_linux.spec
 
-# Hacer ejecutable
-chmod +x dist/StoreManagement
+# Hacer ejecutable si existe
+if [ -f "dist/StoreManagement" ]; then
+    chmod +x dist/StoreManagement
+fi
 
 echo "✅ Ejecutable creado en: dist/StoreManagement"
 echo "📁 El archivo está listo para distribuir"
