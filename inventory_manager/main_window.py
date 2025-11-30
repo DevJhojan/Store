@@ -1,6 +1,7 @@
 """Ventana principal del sistema que permite acceder a los diferentes módulos."""
 import tkinter as tk
 from tkinter import ttk
+import webbrowser
 
 from .config.settings import Settings, COLORS
 from .ui.styles import StyleManager
@@ -108,6 +109,38 @@ class MainWindow:
         
         # Guardar referencia al canvas
         self.canvas = canvas
+        
+        # Frame para el botón de GitHub en la esquina superior derecha
+        github_frame = tk.Frame(self.root, bg=c["bg_darkest"])
+        github_frame.place(relx=1.0, rely=0.0, anchor="ne", x=-10, y=10)
+        
+        # Botón de GitHub
+        github_btn = tk.Button(
+            github_frame,
+            text="🐙",
+            font=(Settings.FONT_PRIMARY, 20),
+            bg=c["bg_dark"],
+            fg=c["text_secondary"],
+            activebackground=c["red_dark"],
+            activeforeground=c["red_primary"],
+            relief=tk.FLAT,
+            bd=0,
+            padx=10,
+            pady=5,
+            cursor="hand2",
+            command=self.open_github
+        )
+        github_btn.pack()
+        
+        # Tooltip al pasar el mouse
+        def on_enter(event):
+            github_btn.config(bg=c["red_dark"], fg=c["red_primary"])
+        
+        def on_leave(event):
+            github_btn.config(bg=c["bg_dark"], fg=c["text_secondary"])
+        
+        github_btn.bind("<Enter>", on_enter)
+        github_btn.bind("<Leave>", on_leave)
         
         # Frame principal dentro del scrollable (con padding)
         main_frame = tk.Frame(scrollable_frame, bg=c["bg_darkest"])
@@ -300,4 +333,8 @@ class MainWindow:
         if self.cash_closure_window:
             self.cash_closure_window.window.destroy()
             self.cash_closure_window = None
+    
+    def open_github(self):
+        """Abre el repositorio de GitHub en el navegador."""
+        webbrowser.open("https://github.com/DevJhojan/Store")
 
