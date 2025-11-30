@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from datetime import datetime
 
 from ...config.settings import Settings
-from ..domain.models import Venta, ItemVenta, MetodoPago, MetodoPago
+from ..domain.models import Venta, ItemVenta, MetodoPago
 
 
 class VentaRepository:
@@ -59,6 +59,23 @@ class VentaRepository:
                     FOREIGN KEY (venta_id) REFERENCES ventas(id) ON DELETE CASCADE
                 )
             """)
+            
+            # Migración: Agregar columna id_venta si no existe (para bases de datos existentes)
+            try:
+                cursor.execute("SELECT id_venta FROM items_venta LIMIT 1")
+            except sqlite3.OperationalError:
+                # La columna no existe, agregarla
+                cursor.execute("ALTER TABLE items_venta ADD COLUMN id_venta INTEGER")
+                # Copiar valores de venta_id a id_venta para mantener consistencia
+                cursor.execute("UPDATE items_venta SET id_venta = venta_id WHERE id_venta IS NULL")
+                # Crear índice para mejorar rendimiento
+                try:
+                    cursor.execute("""
+                        CREATE INDEX IF NOT EXISTS idx_items_venta_id_venta 
+                        ON items_venta(id_venta)
+                    """)
+                except:
+                    pass  # El índice puede no ser necesario si ya existe
             
             # Tabla para configuración de numeración de facturas
             cursor.execute("""
@@ -154,14 +171,14 @@ class VentaRepository:
             )
             venta_id = cursor.lastrowid
             
-            # Insertar items
+            # Insertar items con id_venta y venta_id
             for item in venta.items:
                 cursor.execute(
                     """INSERT INTO items_venta 
-                       (venta_id, codigo_producto, nombre_producto, cantidad, precio_unitario, 
+                       (venta_id, id_venta, codigo_producto, nombre_producto, cantidad, precio_unitario, 
                         descuento, impuesto, subtotal)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-                    (venta_id, item.codigo_producto, item.nombre_producto,
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (venta_id, venta_id, item.codigo_producto, item.nombre_producto,
                      item.cantidad, item.precio_unitario, item.descuento, item.impuesto,
                      item.calcular_total())
                 )
@@ -196,12 +213,22 @@ class VentaRepository:
             (venta_id_db, numero_factura, fecha_str, cliente_id, subtotal, 
              descuento_total, impuesto_total, total, metodo_pago_str, observaciones) = venta_row
             
-            # Obtener items con descuento e impuesto
-            cursor.execute("""
-                SELECT codigo_producto, nombre_producto, cantidad, precio_unitario, descuento, impuesto
-                FROM items_venta
-                WHERE venta_id = ?
-            """, (venta_id,))
+            # Obtener items con descuento e impuesto usando id_venta (con fallback a venta_id)
+            try:
+                cursor.execute("""
+                    SELECT codigo_producto, nombre_producto, cantidad, precio_unitario, descuento, impuesto
+                    FROM items_venta
+                    WHERE id_venta = ?
+                    ORDER BY id
+                """, (venta_id,))
+            except sqlite3.OperationalError:
+                # Si id_venta no existe, usar venta_id
+                cursor.execute("""
+                    SELECT codigo_producto, nombre_producto, cantidad, precio_unitario, descuento, impuesto
+                    FROM items_venta
+                    WHERE venta_id = ?
+                    ORDER BY id
+                """, (venta_id,))
             
             items_data = cursor.fetchall()
             items = [

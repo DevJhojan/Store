@@ -14,6 +14,7 @@ from .repository import ProductRepository
 from .main_window import MainWindow
 from .inventory.ui.views import InventoryGUI
 from .sales.ui.views import SalesGUI
+from .cash_closure.ui.views import CashClosureGUI
 
 __all__ = [
     "Producto",
@@ -22,5 +23,6 @@ __all__ = [
     "MainWindow",
     "InventoryGUI",
     "SalesGUI",
+    "CashClosureGUI",
 ]
 
