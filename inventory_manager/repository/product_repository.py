@@ -29,10 +29,42 @@ class ProductRepository:
                     nombre TEXT NOT NULL,
                     categoria TEXT NOT NULL,
                     cantidad INTEGER NOT NULL,
-                    precio_unitario REAL NOT NULL
+                    precio_unitario REAL NOT NULL,
+                    ganancia REAL NOT NULL DEFAULT 0.0,
+                    valor_venta REAL NOT NULL DEFAULT 0.0
                 )
             """)
             conn.commit()
+            
+            # Migraciones: agregar columnas si no existen
+            try:
+                cursor.execute("PRAGMA table_info(productos)")
+                columns = [row[1] for row in cursor.fetchall()]
+                
+                # Migración: agregar columna ganancia si no existe
+                if 'ganancia' not in columns:
+                    cursor.execute("ALTER TABLE productos ADD COLUMN ganancia REAL NOT NULL DEFAULT 0.0")
+                    conn.commit()
+                
+                # Migración: agregar columna valor_venta si no existe
+                if 'valor_venta' not in columns:
+                    cursor.execute("ALTER TABLE productos ADD COLUMN valor_venta REAL NOT NULL DEFAULT 0.0")
+                    conn.commit()
+                    
+                    # Recalcular valor_venta para productos existentes
+                    cursor.execute("SELECT codigo, precio_unitario, ganancia FROM productos")
+                    productos = cursor.fetchall()
+                    for codigo, precio_unit, ganancia in productos:
+                        ganancia_unit = precio_unit * (ganancia / 100.0)
+                        valor_venta = precio_unit + ganancia_unit
+                        cursor.execute(
+                            "UPDATE productos SET valor_venta = ? WHERE codigo = ?",
+                            (valor_venta, codigo)
+                        )
+                    conn.commit()
+            except sqlite3.OperationalError:
+                # Error al agregar columna, puede que ya exista
+                pass
     
     @contextmanager
     def _get_connection(self):
@@ -56,10 +88,14 @@ class ProductRepository:
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
+                # Asegurar que valor_venta esté calculado
+                if product.valor_venta == 0.0:
+                    product.valor_venta = product.calcular_valor_venta()
+                
                 cursor.execute(
-                    "INSERT INTO productos VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO productos (codigo, nombre, categoria, cantidad, precio_unitario, ganancia, valor_venta) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     (product.codigo, product.nombre, product.categoria, 
-                     product.cantidad, product.precio_unitario)
+                     product.cantidad, product.precio_unitario, product.ganancia, product.valor_venta)
                 )
                 conn.commit()
                 return True
@@ -78,7 +114,7 @@ class ProductRepository:
         """
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM productos WHERE codigo = ?", (codigo,))
+            cursor.execute("SELECT codigo, nombre, categoria, cantidad, precio_unitario, ganancia, valor_venta FROM productos WHERE codigo = ?", (codigo,))
             row = cursor.fetchone()
             if row:
                 return Producto.from_tuple(row)
@@ -93,9 +129,14 @@ class ProductRepository:
         """
         with self._get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM productos")
+            cursor.execute("SELECT codigo, nombre, categoria, cantidad, precio_unitario, ganancia, valor_venta FROM productos")
             rows = cursor.fetchall()
-            return [Producto.from_tuple(row) for row in rows]
+            productos = [Producto.from_tuple(row) for row in rows]
+            # Asegurar que todos los productos tengan valor_venta calculado
+            for producto in productos:
+                if producto.valor_venta == 0.0:
+                    producto.valor_venta = producto.calcular_valor_venta()
+            return productos
     
     def update(self, codigo_original: str, product: Producto) -> bool:
         """
@@ -111,12 +152,16 @@ class ProductRepository:
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
+                # Asegurar que valor_venta esté calculado
+                if product.valor_venta == 0.0:
+                    product.valor_venta = product.calcular_valor_venta()
+                
                 cursor.execute("""
                     UPDATE productos 
-                    SET codigo = ?, nombre = ?, categoria = ?, cantidad = ?, precio_unitario = ?
+                    SET codigo = ?, nombre = ?, categoria = ?, cantidad = ?, precio_unitario = ?, ganancia = ?, valor_venta = ?
                     WHERE codigo = ?
                 """, (product.codigo, product.nombre, product.categoria, 
-                      product.cantidad, product.precio_unitario, codigo_original))
+                      product.cantidad, product.precio_unitario, product.ganancia, product.valor_venta, codigo_original))
                 conn.commit()
                 return cursor.rowcount > 0
         except sqlite3.IntegrityError:
@@ -176,7 +221,7 @@ class ProductRepository:
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT * FROM productos WHERE nombre LIKE ? ORDER BY nombre",
+                "SELECT codigo, nombre, categoria, cantidad, precio_unitario, ganancia, valor_venta FROM productos WHERE nombre LIKE ? ORDER BY nombre",
                 (f"%{nombre}%",)
             )
             rows = cursor.fetchall()
