@@ -13,7 +13,7 @@ from .services import InventoryService
 from .repository import ProductRepository
 from .main_window import MainWindow
 from .inventory.views import InventoryGUI
-from .sales.ui.views import SalesGUI
+from .sales.views import SalesGUI
 from .cash_closure.ui.views import CashClosureGUI
 
 __all__ = [

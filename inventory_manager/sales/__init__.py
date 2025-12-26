@@ -1,5 +1,5 @@
 """Módulo de Ventas."""
-from .ui.views import SalesGUI
+from .views import SalesGUI
 
 __all__ = ["SalesGUI"]
 

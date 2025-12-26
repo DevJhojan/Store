@@ -3,11 +3,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 from typing import Dict, Optional, List
 
-from ...config.settings import Settings, COLORS
-from ...ui.styles import StyleManager
-from ...utils.validators import parse_numeric_field
-from ..domain.models import Venta, ItemVenta
-from ..services.venta_service import VentaService
+from ..config.settings import Settings, COLORS
+from ..ui.styles import StyleManager
+from ..utils.validators import parse_numeric_field
+from .domain.models import Venta, ItemVenta
+from .services.venta_service import VentaService
 
 
 class SalesGUI:
