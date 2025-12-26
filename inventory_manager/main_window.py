@@ -110,18 +110,20 @@ class MainWindow:
         github_btn.bind("<Enter>", on_enter)
         github_btn.bind("<Leave>", on_leave)
         
+        # Button bar de navegación en la parte inferior (SIEMPRE visible)
+        # Empacar PRIMERO para que esté fijo en la parte inferior
+        self.nav_bar_frame = self.create_navigation_bar(main_container, c)
+        
         # Frame contenedor principal para el contenido (resumen o módulos)
+        # Empacar DESPUÉS del button bar para que esté arriba
         self.content_container = tk.Frame(main_container, bg=c["bg_darkest"])
-        self.content_container.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
+        self.content_container.pack(fill=tk.BOTH, expand=True, padx=30, pady=(20, 10))
         
         # Crear frame de resumen (se mostrará inicialmente)
         self.create_summary_frame(self.content_container, c)
         
         # Frame para módulos (se creará cuando se necesite)
         self.module_container = tk.Frame(self.content_container, bg=c["bg_darkest"])
-        
-        # Button bar de navegación en la parte inferior
-        self.create_navigation_bar(main_container, c)
     
     def get_summary_data(self):
         """Obtiene los datos del resumen del sistema."""
@@ -294,7 +296,8 @@ class MainWindow:
         """Crea la barra de navegación con botones para los módulos."""
         # Frame para la barra de navegación
         nav_frame = tk.Frame(parent, bg=colors["bg_medium"], height=80)
-        nav_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=0, pady=0)
+        # Empaquetar en la parte inferior PRIMERO para asegurar que siempre esté visible
+        nav_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=0, pady=(0, 0))
         nav_frame.pack_propagate(False)
         
         # Frame interno con padding
@@ -363,6 +366,8 @@ class MainWindow:
             background=[("active", colors["red_primary"]), ("pressed", colors["red_dark"])],
             foreground=[("active", colors["text_primary"])]
         )
+        
+        return nav_frame
     
     def update_summary(self):
         """Actualiza las tarjetas de resumen con datos actuales."""
@@ -412,6 +417,8 @@ class MainWindow:
             self.summary_frame.pack_forget()
         if self.module_container and self.module_container.winfo_ismapped():
             self.module_container.pack_forget()
+            # Asegurar que el layout se actualice
+            self.content_container.update_idletasks()
     
     def show_summary(self):
         """Muestra el resumen del sistema."""
@@ -420,17 +427,27 @@ class MainWindow:
             self.summary_frame.pack(fill=tk.BOTH, expand=True)
         self.update_summary()
     
+    def cleanup_module_container(self):
+        """Limpia completamente el module_container destruyendo todos sus widgets."""
+        if self.module_container:
+            # Destruir todos los widgets del contenedor
+            for widget in self.module_container.winfo_children():
+                widget.destroy()
+            self.module_container.update_idletasks()
+    
     def show_inventory(self):
         """Muestra el módulo de Inventarios."""
         self.hide_current_content()
         
-        # Asegurar que el module_container exista y esté empaquetado
+        # Asegurar que el module_container exista
         if self.module_container is None:
             self.module_container = tk.Frame(self.content_container, bg=COLORS["bg_darkest"])
         
-        # Inicializar módulo si no existe
-        if self.inventory_module is None:
-            self.initialize_inventory_module()
+        # Limpiar el contenedor antes de mostrar otro módulo
+        self.cleanup_module_container()
+        
+        # Inicializar módulo (siempre reinicializamos para evitar problemas)
+        self.initialize_inventory_module()
         
         # Mostrar módulo
         self.module_container.pack(fill=tk.BOTH, expand=True)
@@ -442,13 +459,15 @@ class MainWindow:
         """Muestra el módulo de Ventas."""
         self.hide_current_content()
         
-        # Asegurar que el module_container exista y esté empaquetado
+        # Asegurar que el module_container exista
         if self.module_container is None:
             self.module_container = tk.Frame(self.content_container, bg=COLORS["bg_darkest"])
         
-        # Inicializar módulo si no existe
-        if self.sales_module is None:
-            self.initialize_sales_module()
+        # Limpiar el contenedor antes de mostrar otro módulo
+        self.cleanup_module_container()
+        
+        # Inicializar módulo (siempre reinicializamos para evitar problemas)
+        self.initialize_sales_module()
         
         # Mostrar módulo
         self.module_container.pack(fill=tk.BOTH, expand=True)
@@ -460,13 +479,15 @@ class MainWindow:
         """Muestra el módulo de Cierre de Caja."""
         self.hide_current_content()
         
-        # Asegurar que el module_container exista y esté empaquetado
+        # Asegurar que el module_container exista
         if self.module_container is None:
             self.module_container = tk.Frame(self.content_container, bg=COLORS["bg_darkest"])
         
-        # Inicializar módulo si no existe
-        if self.cash_closure_module is None:
-            self.initialize_cash_closure_module()
+        # Limpiar el contenedor antes de mostrar otro módulo
+        self.cleanup_module_container()
+        
+        # Inicializar módulo (siempre reinicializamos para evitar problemas)
+        self.initialize_cash_closure_module()
         
         # Mostrar módulo
         self.module_container.pack(fill=tk.BOTH, expand=True)
@@ -476,32 +497,19 @@ class MainWindow:
     
     def initialize_inventory_module(self):
         """Inicializa el módulo de Inventarios dentro de un Frame."""
-        # Limpiar contenido previo
-        for widget in self.module_container.winfo_children():
-            widget.destroy()
-        
         # Crear el módulo pasándole el Frame directamente
         self.inventory_module = InventoryGUI(self.module_container, service=self.inventory_service)
     
     def initialize_sales_module(self):
         """Inicializa el módulo de Ventas dentro de un Frame."""
-        # Limpiar contenido previo
-        for widget in self.module_container.winfo_children():
-            widget.destroy()
-        
         # Crear el módulo pasándole el Frame directamente
         self.sales_module = SalesGUI(self.module_container)
         
-        # Configurar referencia al inventario si existe
-        if self.inventory_module:
-            self.sales_module.inventory_gui_ref = self.inventory_module
+        # Configurar referencia al inventario (se recreará si es necesario)
+        # No necesitamos verificar si existe porque siempre reinicializamos
     
     def initialize_cash_closure_module(self):
         """Inicializa el módulo de Cierre de Caja dentro de un Frame."""
-        # Limpiar contenido previo
-        for widget in self.module_container.winfo_children():
-            widget.destroy()
-        
         # Crear el módulo pasándole el Frame directamente
         self.cash_closure_module = CashClosureGUI(self.module_container, service=self.cash_closure_service)
     
