@@ -405,6 +405,7 @@ class CashClosureGUI:
             columns=columns,
             show="headings",
             style="Custom.Treeview",
+            height=10,  # Mostrar 10 filas
             yscrollcommand=v_scrollbar_table.set,
             xscrollcommand=h_scrollbar_table.set
         )

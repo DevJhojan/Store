@@ -379,6 +379,7 @@ class InventoryGUI:
             columns=columns,
             show="headings",
             style="Custom.Treeview",
+            height=10,  # Mostrar 10 filas
             yscrollcommand=v_scrollbar.set,
             xscrollcommand=h_scrollbar.set
         )
