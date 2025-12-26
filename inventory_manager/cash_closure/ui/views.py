@@ -356,7 +356,7 @@ class CashClosureGUI:
         # Frame contenedor para tabla y detalles (layout vertical)
         table_details_container = tk.Frame(main_frame, bg=c["bg_darkest"])
         table_details_container.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
-        table_details_container.grid_rowconfigure(0, weight=3)  # Tabla ocupa más espacio vertical (aumentado para 10 filas)
+        table_details_container.grid_rowconfigure(0, weight=3)  # Tabla ocupa más espacio vertical
         table_details_container.grid_rowconfigure(1, weight=1)  # Detalles ocupan menos espacio
         table_details_container.grid_columnconfigure(0, weight=1)
         
@@ -398,7 +398,7 @@ class CashClosureGUI:
         )
         h_scrollbar_table.grid(row=1, column=0, sticky="ew")
         
-        # Treeview (tabla) - sin height fijo para que sea dinámico
+        # Treeview (tabla) - con height específico para mejor visualización
         columns = ("numero_factura", "fecha", "hora", "cliente_id", "subtotal", 
                   "descuento", "impuesto", "total", "metodo_pago")
         
@@ -407,6 +407,7 @@ class CashClosureGUI:
             columns=columns,
             show="headings",
             style="Custom.Treeview",
+            height=20,  # Altura de la tabla (número de filas visibles)
             yscrollcommand=v_scrollbar_table.set,
             xscrollcommand=h_scrollbar_table.set
         )
