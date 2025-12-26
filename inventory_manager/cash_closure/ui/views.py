@@ -168,147 +168,162 @@ class CashClosureGUI:
         )
         filters_title.pack()
         
-        # Contenedor de filtros
+        # Contenedor de filtros usando grid para mejor distribución
         filters_content = tk.Frame(filters_frame, bg=c["bg_dark"])
-        filters_content.pack(fill=tk.X, padx=15, pady=(0, 15))
+        filters_content.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
         
-        # Fila 1: Filtro por día
-        day_frame = tk.Frame(filters_content, bg=c["bg_dark"])
-        day_frame.pack(fill=tk.X, pady=(0, 10))
+        # Configurar columnas del grid para mejor distribución
+        filters_content.grid_columnconfigure(1, weight=1)  # Columna de inputs principal (expande)
+        filters_content.grid_columnconfigure(2, weight=1)  # Columna para inputs secundarios
+        filters_content.grid_columnconfigure(3, weight=2)  # Columna de año con más peso para que sea más ancho
         
+        row = 0
+        
+        # Fila 1: Filtro por día (input ocupa TODO el ancho disponible)
         tk.Label(
-            day_frame,
+            filters_content,
             text="Día específico:",
             font=(Settings.FONT_PRIMARY, 10),
             fg=c["text_secondary"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT, padx=(0, 10))
+        ).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=5)
         
         fecha_dia_entry = tk.Entry(
-            day_frame,
+            filters_content,
             textvariable=self.fecha_dia_var,
             font=(Settings.FONT_PRIMARY, 10),
             bg=c["bg_medium"],
             fg=c["text_primary"],
-            relief=tk.FLAT,
-            width=15
+            relief=tk.FLAT
         )
-        fecha_dia_entry.pack(side=tk.LEFT, padx=(0, 20))
+        fecha_dia_entry.grid(row=row, column=1, columnspan=3, sticky="ew", padx=(0, 10), pady=5)
+        
         tk.Label(
-            day_frame,
+            filters_content,
             text="(YYYY-MM-DD)",
             font=(Settings.FONT_PRIMARY, 8),
             fg=c["text_muted"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT)
+        ).grid(row=row, column=4, sticky="w", pady=5)
         
-        # Fila 2: Filtro por mes y año
-        month_year_frame = tk.Frame(filters_content, bg=c["bg_dark"])
-        month_year_frame.pack(fill=tk.X, pady=(0, 10))
+        row += 1
         
+        # Fila 2: Filtro por mes y año (año es más ancho)
         tk.Label(
-            month_year_frame,
+            filters_content,
             text="Mes:",
             font=(Settings.FONT_PRIMARY, 10),
             fg=c["text_secondary"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT, padx=(0, 10))
+        ).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=5)
         
         mes_combo = ttk.Combobox(
-            month_year_frame,
+            filters_content,
             textvariable=self.mes_var,
             values=["", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
             state="readonly",
-            width=5
+            width=8
         )
-        mes_combo.pack(side=tk.LEFT, padx=(0, 20))
+        mes_combo.grid(row=row, column=1, sticky="w", padx=(0, 15), pady=5)
         
         tk.Label(
-            month_year_frame,
+            filters_content,
             text="Año:",
             font=(Settings.FONT_PRIMARY, 10),
             fg=c["text_secondary"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT, padx=(0, 10))
+        ).grid(row=row, column=2, sticky="w", padx=(0, 10), pady=5)
         
         año_entry = tk.Entry(
-            month_year_frame,
+            filters_content,
             textvariable=self.año_var,
             font=(Settings.FONT_PRIMARY, 10),
             bg=c["bg_medium"],
             fg=c["text_primary"],
-            relief=tk.FLAT,
-            width=10
+            relief=tk.FLAT
         )
-        año_entry.pack(side=tk.LEFT)
+        año_entry.grid(row=row, column=3, sticky="ew", pady=5)
         
-        # Fila 3: Filtro por rango de horas
-        hours_frame = tk.Frame(filters_content, bg=c["bg_dark"])
-        hours_frame.pack(fill=tk.X, pady=(0, 10))
+        row += 1
         
+        # Fila 3: Filtro por rango de horas (inputs ocupan la mitad del espacio disponible)
         tk.Label(
-            hours_frame,
+            filters_content,
             text="Rango de horas:",
             font=(Settings.FONT_PRIMARY, 10),
             fg=c["text_secondary"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT, padx=(0, 10))
+        ).grid(row=row, column=0, sticky="w", padx=(0, 10), pady=5)
+        
+        # Contenedor para "Desde" (ocupa la mitad del espacio)
+        desde_frame = tk.Frame(filters_content, bg=c["bg_dark"])
+        desde_frame.grid(row=row, column=1, sticky="ew", pady=5)
+        desde_frame.grid_columnconfigure(1, weight=1)  # El input se expande
         
         tk.Label(
-            hours_frame,
+            desde_frame,
             text="Desde:",
             font=(Settings.FONT_PRIMARY, 9),
             fg=c["text_secondary"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT, padx=(0, 5))
+        ).grid(row=0, column=0, sticky="w", padx=(0, 5))
         
         hora_inicio_entry = tk.Entry(
-            hours_frame,
+            desde_frame,
             textvariable=self.hora_inicio_var,
             font=(Settings.FONT_PRIMARY, 10),
             bg=c["bg_medium"],
             fg=c["text_primary"],
-            relief=tk.FLAT,
-            width=10
+            relief=tk.FLAT
         )
-        hora_inicio_entry.pack(side=tk.LEFT, padx=(0, 10))
+        hora_inicio_entry.grid(row=0, column=1, sticky="ew", padx=(0, 5))
+        
         tk.Label(
-            hours_frame,
+            desde_frame,
             text="(HH:MM)",
             font=(Settings.FONT_PRIMARY, 8),
             fg=c["text_muted"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT, padx=(0, 10))
+        ).grid(row=0, column=2, sticky="w", padx=(0, 15))
+        
+        # Contenedor para "Hasta" (ocupa la mitad del espacio)
+        hasta_frame = tk.Frame(filters_content, bg=c["bg_dark"])
+        hasta_frame.grid(row=row, column=2, sticky="ew", pady=5)
+        hasta_frame.grid_columnconfigure(1, weight=1)  # El input se expande
         
         tk.Label(
-            hours_frame,
+            hasta_frame,
             text="Hasta:",
             font=(Settings.FONT_PRIMARY, 9),
             fg=c["text_secondary"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT, padx=(0, 5))
+        ).grid(row=0, column=0, sticky="w", padx=(0, 5))
         
         hora_fin_entry = tk.Entry(
-            hours_frame,
+            hasta_frame,
             textvariable=self.hora_fin_var,
             font=(Settings.FONT_PRIMARY, 10),
             bg=c["bg_medium"],
             fg=c["text_primary"],
-            relief=tk.FLAT,
-            width=10
+            relief=tk.FLAT
         )
-        hora_fin_entry.pack(side=tk.LEFT, padx=(0, 10))
+        hora_fin_entry.grid(row=0, column=1, sticky="ew", padx=(0, 5))
+        
         tk.Label(
-            hours_frame,
+            hasta_frame,
             text="(HH:MM)",
             font=(Settings.FONT_PRIMARY, 8),
             fg=c["text_muted"],
             bg=c["bg_dark"]
-        ).pack(side=tk.LEFT)
+        ).grid(row=0, column=2, sticky="w")
         
-        # Botones de filtro
+        row += 1
+        
+        # Botones de filtro (botón limpiar es más ancho)
         buttons_frame = tk.Frame(filters_content, bg=c["bg_dark"])
-        buttons_frame.pack(fill=tk.X, pady=(10, 0))
+        buttons_frame.grid(row=row, column=0, columnspan=4, sticky="ew", pady=(10, 0))
+        buttons_frame.grid_columnconfigure(0, weight=1)  # Primer botón
+        buttons_frame.grid_columnconfigure(1, weight=2)  # Segundo botón más ancho (doble peso)
         
         btn_aplicar = ttk.Button(
             buttons_frame,
@@ -316,7 +331,7 @@ class CashClosureGUI:
             command=self.aplicar_filtros,
             style="Accent.TButton"
         )
-        btn_aplicar.pack(side=tk.LEFT, padx=(0, 10))
+        btn_aplicar.grid(row=0, column=0, sticky="ew", padx=(0, 5))
         
         btn_limpiar = ttk.Button(
             buttons_frame,
@@ -324,7 +339,7 @@ class CashClosureGUI:
             command=self.limpiar_filtros,
             style="Secondary.TButton"
         )
-        btn_limpiar.pack(side=tk.LEFT)
+        btn_limpiar.grid(row=0, column=1, sticky="ew", padx=(5, 0))
         
         # Frame contenedor para tabla y detalles (layout vertical)
         table_details_container = tk.Frame(main_frame, bg=c["bg_darkest"])
