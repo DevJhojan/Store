@@ -356,13 +356,15 @@ class CashClosureGUI:
         # Frame contenedor para tabla y detalles (layout vertical)
         table_details_container = tk.Frame(main_frame, bg=c["bg_darkest"])
         table_details_container.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
-        table_details_container.grid_rowconfigure(0, weight=2)  # Tabla ocupa más espacio vertical
+        table_details_container.grid_rowconfigure(0, weight=3)  # Tabla ocupa más espacio vertical (aumentado para 10 filas)
         table_details_container.grid_rowconfigure(1, weight=1)  # Detalles ocupan menos espacio
         table_details_container.grid_columnconfigure(0, weight=1)
         
         # Frame de tabla (parte superior)
         table_frame = tk.Frame(table_details_container, bg=c["bg_dark"], relief=tk.RAISED, bd=2)
         table_frame.grid(row=0, column=0, sticky="nsew", pady=(0, 10))
+        table_frame.grid_rowconfigure(1, weight=1)  # Permitir que la tabla se expanda
+        table_frame.grid_columnconfigure(0, weight=1)
         
         table_title = tk.Label(
             table_frame,
@@ -372,11 +374,11 @@ class CashClosureGUI:
             bg=c["bg_dark"],
             pady=10
         )
-        table_title.pack()
+        table_title.grid(row=0, column=0, sticky="ew")
         
         # Frame para tabla con scrollbars usando grid para mejor control
         table_container = tk.Frame(table_frame, bg=c["bg_dark"])
-        table_container.pack(fill=tk.BOTH, expand=True, padx=10, pady=(0, 10))
+        table_container.grid(row=1, column=0, sticky="nsew", padx=10, pady=(0, 10))
         table_container.grid_rowconfigure(0, weight=1)
         table_container.grid_columnconfigure(0, weight=1)
         
@@ -396,7 +398,7 @@ class CashClosureGUI:
         )
         h_scrollbar_table.grid(row=1, column=0, sticky="ew")
         
-        # Treeview (tabla)
+        # Treeview (tabla) - sin height fijo para que sea dinámico
         columns = ("numero_factura", "fecha", "hora", "cliente_id", "subtotal", 
                   "descuento", "impuesto", "total", "metodo_pago")
         
@@ -405,7 +407,6 @@ class CashClosureGUI:
             columns=columns,
             show="headings",
             style="Custom.Treeview",
-            height=10,  # Mostrar 10 filas
             yscrollcommand=v_scrollbar_table.set,
             xscrollcommand=h_scrollbar_table.set
         )
@@ -413,7 +414,7 @@ class CashClosureGUI:
         v_scrollbar_table.config(command=self.tree.yview)
         h_scrollbar_table.config(command=self.tree.xview)
         
-        # Colocar la tabla en el grid
+        # Colocar la tabla en el grid (se expandirá dinámicamente)
         self.tree.grid(row=0, column=0, sticky="nsew")
         
         # Configurar columnas

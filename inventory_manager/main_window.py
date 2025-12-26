@@ -6,7 +6,7 @@ from datetime import datetime, date
 
 from .config.settings import Settings, COLORS
 from .ui.styles import StyleManager
-from .inventory.ui.views import InventoryGUI
+from .inventory.views import InventoryGUI
 from .sales.ui.views import SalesGUI
 from .cash_closure.ui.views import CashClosureGUI
 from .repository.product_repository import ProductRepository
