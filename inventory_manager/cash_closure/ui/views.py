@@ -121,14 +121,26 @@ class CashClosureGUI:
         
         # Habilitar scroll con rueda del mouse (Windows/Mac)
         def on_mousewheel(event):
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            try:
+                if canvas.winfo_exists():
+                    canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            except tk.TclError:
+                pass
         
         # Habilitar scroll con rueda del mouse (Linux)
         def on_button4(event):
-            canvas.yview_scroll(-1, "units")
+            try:
+                if canvas.winfo_exists():
+                    canvas.yview_scroll(-1, "units")
+            except tk.TclError:
+                pass
         
         def on_button5(event):
-            canvas.yview_scroll(1, "units")
+            try:
+                if canvas.winfo_exists():
+                    canvas.yview_scroll(1, "units")
+            except tk.TclError:
+                pass
         
         canvas.bind_all("<MouseWheel>", on_mousewheel)
         canvas.bind_all("<Button-4>", on_button4)
@@ -511,13 +523,25 @@ class CashClosureGUI:
         
         # Habilitar scroll con rueda del mouse
         def on_detalle_mousewheel(event):
-            detalle_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            try:
+                if detalle_canvas.winfo_exists():
+                    detalle_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            except tk.TclError:
+                pass
         
         def on_detalle_button4(event):
-            detalle_canvas.yview_scroll(-1, "units")
+            try:
+                if detalle_canvas.winfo_exists():
+                    detalle_canvas.yview_scroll(-1, "units")
+            except tk.TclError:
+                pass
         
         def on_detalle_button5(event):
-            detalle_canvas.yview_scroll(1, "units")
+            try:
+                if detalle_canvas.winfo_exists():
+                    detalle_canvas.yview_scroll(1, "units")
+            except tk.TclError:
+                pass
         
         detalle_canvas.bind_all("<MouseWheel>", on_detalle_mousewheel, add="+")
         detalle_canvas.bind_all("<Button-4>", on_detalle_button4, add="+")
