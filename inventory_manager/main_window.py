@@ -48,10 +48,15 @@ class MainWindow:
         # Configurar estilos
         self.style_manager = StyleManager()
         
-        # Referencias a ventanas abiertas
-        self.inventory_window = None
-        self.sales_window = None
-        self.cash_closure_window = None
+        # Referencias a módulos (ahora son Frames, no ventanas)
+        self.inventory_module = None
+        self.sales_module = None
+        self.cash_closure_module = None
+        
+        # Frame contenedor principal para el contenido
+        self.content_container = None
+        self.summary_frame = None
+        self.current_module_frame = None
         
         # Inicializar servicios para obtener datos del resumen
         self.product_repository = ProductRepository()
@@ -62,8 +67,8 @@ class MainWindow:
         # Crear interfaz
         self.create_widgets()
         
-        # Actualizar resumen
-        self.update_summary()
+        # Mostrar resumen inicialmente
+        self.show_summary()
     
     def create_widgets(self):
         """Crear todos los widgets de la ventana principal con resumen y navegación."""
@@ -105,44 +110,15 @@ class MainWindow:
         github_btn.bind("<Enter>", on_enter)
         github_btn.bind("<Leave>", on_leave)
         
-        # Frame para contenido principal (resumen)
-        content_frame = tk.Frame(main_container, bg=c["bg_darkest"])
-        content_frame.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
+        # Frame contenedor principal para el contenido (resumen o módulos)
+        self.content_container = tk.Frame(main_container, bg=c["bg_darkest"])
+        self.content_container.pack(fill=tk.BOTH, expand=True, padx=30, pady=20)
         
-        # Título principal
-        title_frame = tk.Frame(content_frame, bg=c["bg_darkest"])
-        title_frame.pack(fill=tk.X, pady=(0, 30))
+        # Crear frame de resumen (se mostrará inicialmente)
+        self.create_summary_frame(self.content_container, c)
         
-        # Línea decorativa superior
-        tk.Frame(title_frame, bg=c["red_primary"], height=3).pack(fill=tk.X, pady=(0, 15))
-        
-        title_label = tk.Label(
-            title_frame,
-            text="◆ RESUMEN DEL SISTEMA DE GESTIÓN ◆",
-            font=(Settings.FONT_PRIMARY, 20, "bold"),
-            fg=c["red_primary"],
-            bg=c["bg_darkest"]
-        )
-        title_label.pack()
-        
-        subtitle_label = tk.Label(
-            title_frame,
-            text="[ Vista General de la Operación ]",
-            font=(Settings.FONT_PRIMARY, 10),
-            fg=c["text_muted"],
-            bg=c["bg_darkest"]
-        )
-        subtitle_label.pack(pady=(5, 0))
-        
-        # Línea decorativa inferior
-        tk.Frame(title_frame, bg=c["red_primary"], height=3).pack(fill=tk.X, pady=(15, 0))
-        
-        # Frame para las tarjetas de resumen
-        summary_frame = tk.Frame(content_frame, bg=c["bg_darkest"])
-        summary_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
-        
-        # Crear tarjetas de resumen (se actualizarán con datos reales)
-        self.create_summary_cards(summary_frame, c)
+        # Frame para módulos (se creará cuando se necesite)
+        self.module_container = tk.Frame(self.content_container, bg=c["bg_darkest"])
         
         # Button bar de navegación en la parte inferior
         self.create_navigation_bar(main_container, c)
@@ -204,6 +180,45 @@ class MainWindow:
                 "ventas_mes": 0,
                 "ingresos_mes": 0.0
             }
+    
+    def create_summary_frame(self, parent: tk.Frame, colors: dict):
+        """Crea el frame de resumen con las tarjetas."""
+        self.summary_frame = tk.Frame(parent, bg=colors["bg_darkest"])
+        
+        # Título principal
+        title_frame = tk.Frame(self.summary_frame, bg=colors["bg_darkest"])
+        title_frame.pack(fill=tk.X, pady=(0, 30))
+        
+        # Línea decorativa superior
+        tk.Frame(title_frame, bg=colors["red_primary"], height=3).pack(fill=tk.X, pady=(0, 15))
+        
+        title_label = tk.Label(
+            title_frame,
+            text="◆ RESUMEN DEL SISTEMA DE GESTIÓN ◆",
+            font=(Settings.FONT_PRIMARY, 20, "bold"),
+            fg=colors["red_primary"],
+            bg=colors["bg_darkest"]
+        )
+        title_label.pack()
+        
+        subtitle_label = tk.Label(
+            title_frame,
+            text="[ Vista General de la Operación ]",
+            font=(Settings.FONT_PRIMARY, 10),
+            fg=colors["text_muted"],
+            bg=colors["bg_darkest"]
+        )
+        subtitle_label.pack(pady=(5, 0))
+        
+        # Línea decorativa inferior
+        tk.Frame(title_frame, bg=colors["red_primary"], height=3).pack(fill=tk.X, pady=(15, 0))
+        
+        # Frame para las tarjetas de resumen
+        summary_cards_frame = tk.Frame(self.summary_frame, bg=colors["bg_darkest"])
+        summary_cards_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 20))
+        
+        # Crear tarjetas de resumen (se actualizarán con datos reales)
+        self.create_summary_cards(summary_cards_frame, colors)
     
     def create_summary_cards(self, parent: tk.Frame, colors: dict):
         """Crea las tarjetas de resumen con estadísticas."""
@@ -293,11 +308,21 @@ class MainWindow:
         btn_frame = tk.Frame(nav_inner, bg=colors["bg_medium"])
         btn_frame.pack(fill=tk.BOTH, expand=True)
         
+        # Botón Resumen
+        btn_resumen = ttk.Button(
+            btn_frame,
+            text="📊 Resumen",
+            command=self.show_summary,
+            style="Nav.TButton",
+            width=20
+        )
+        btn_resumen.pack(side=tk.LEFT, padx=5, fill=tk.BOTH, expand=True)
+        
         # Botón Inventarios
         btn_inventario = ttk.Button(
             btn_frame,
             text="📦 Inventarios",
-            command=self.open_inventory,
+            command=self.show_inventory,
             style="Nav.TButton",
             width=20
         )
@@ -307,7 +332,7 @@ class MainWindow:
         btn_ventas = ttk.Button(
             btn_frame,
             text="💰 Ventas",
-            command=self.open_sales,
+            command=self.show_sales,
             style="Nav.TButton",
             width=20
         )
@@ -317,7 +342,7 @@ class MainWindow:
         btn_cierre = ttk.Button(
             btn_frame,
             text="💵 Cierre de Caja",
-            command=self.open_cash_closure,
+            command=self.show_cash_closure,
             style="Nav.TButton",
             width=20
         )
@@ -381,86 +406,104 @@ class MainWindow:
         )
         self.monthly_card["content_label"].config(text=monthly_text)
     
-    def open_inventory(self):
-        """Abre el módulo de Inventarios."""
-        if self.inventory_window is None or not self.inventory_window.window.winfo_exists():
-            self.inventory_window = InventoryGUI(self.root)
-            # Configurar callback cuando se cierre
-            self.inventory_window.window.protocol(
-                "WM_DELETE_WINDOW",
-                lambda: self.on_inventory_close()
-            )
-            # Pasar referencia para notificaciones bidireccionales
-            if self.sales_window and hasattr(self.sales_window, 'window') and self.sales_window.window.winfo_exists():
-                self.sales_window.inventory_gui_ref = self.inventory_window
-        else:
-            self.inventory_window.window.lift()
-            self.inventory_window.window.focus()
-        
-        # Actualizar resumen después de abrir
-        self.root.after(1000, self.update_summary)
+    def hide_current_content(self):
+        """Oculta el contenido actual (resumen o módulo)."""
+        if self.summary_frame and self.summary_frame.winfo_ismapped():
+            self.summary_frame.pack_forget()
+        if self.module_container and self.module_container.winfo_ismapped():
+            self.module_container.pack_forget()
     
-    def open_sales(self):
-        """Abre el módulo de Ventas."""
-        if self.sales_window is None or not self.sales_window.window.winfo_exists():
-            self.sales_window = SalesGUI(self.root)
-            # Configurar callback cuando se cierre
-            self.sales_window.window.protocol(
-                "WM_DELETE_WINDOW",
-                lambda: self.on_sales_close()
-            )
-            # Pasar referencia al inventario si está abierto
-            if self.inventory_window and hasattr(self.inventory_window, 'window') and self.inventory_window.window.winfo_exists():
-                self.sales_window.inventory_gui_ref = self.inventory_window
-        else:
-            self.sales_window.window.lift()
-            self.sales_window.window.focus()
-        
-        # Actualizar resumen después de abrir
-        self.root.after(1000, self.update_summary)
-    
-    def on_inventory_close(self):
-        """Maneja el cierre de la ventana de inventarios."""
-        if self.inventory_window:
-            self.inventory_window.window.destroy()
-            self.inventory_window = None
-            # Limpiar referencia en ventas
-            if self.sales_window:
-                self.sales_window.inventory_gui_ref = None
-        # Actualizar resumen
+    def show_summary(self):
+        """Muestra el resumen del sistema."""
+        self.hide_current_content()
+        if self.summary_frame:
+            self.summary_frame.pack(fill=tk.BOTH, expand=True)
         self.update_summary()
     
-    def open_cash_closure(self):
-        """Abre el módulo de Cierre de Caja."""
-        if self.cash_closure_window is None or not self.cash_closure_window.window.winfo_exists():
-            self.cash_closure_window = CashClosureGUI(self.root)
-            # Configurar callback cuando se cierre
-            self.cash_closure_window.window.protocol(
-                "WM_DELETE_WINDOW",
-                lambda: self.on_cash_closure_close()
-            )
-        else:
-            self.cash_closure_window.window.lift()
-            self.cash_closure_window.window.focus()
+    def show_inventory(self):
+        """Muestra el módulo de Inventarios."""
+        self.hide_current_content()
         
-        # Actualizar resumen después de abrir
+        # Asegurar que el module_container exista y esté empaquetado
+        if self.module_container is None:
+            self.module_container = tk.Frame(self.content_container, bg=COLORS["bg_darkest"])
+        
+        # Inicializar módulo si no existe
+        if self.inventory_module is None:
+            self.initialize_inventory_module()
+        
+        # Mostrar módulo
+        self.module_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Actualizar resumen después (para cuando se vuelva al resumen)
         self.root.after(1000, self.update_summary)
     
-    def on_sales_close(self):
-        """Maneja el cierre de la ventana de ventas."""
-        if self.sales_window:
-            self.sales_window.window.destroy()
-            self.sales_window = None
-        # Actualizar resumen
-        self.update_summary()
+    def show_sales(self):
+        """Muestra el módulo de Ventas."""
+        self.hide_current_content()
+        
+        # Asegurar que el module_container exista y esté empaquetado
+        if self.module_container is None:
+            self.module_container = tk.Frame(self.content_container, bg=COLORS["bg_darkest"])
+        
+        # Inicializar módulo si no existe
+        if self.sales_module is None:
+            self.initialize_sales_module()
+        
+        # Mostrar módulo
+        self.module_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Actualizar resumen después
+        self.root.after(1000, self.update_summary)
     
-    def on_cash_closure_close(self):
-        """Maneja el cierre de la ventana de cierre de caja."""
-        if self.cash_closure_window:
-            self.cash_closure_window.window.destroy()
-            self.cash_closure_window = None
-        # Actualizar resumen
-        self.update_summary()
+    def show_cash_closure(self):
+        """Muestra el módulo de Cierre de Caja."""
+        self.hide_current_content()
+        
+        # Asegurar que el module_container exista y esté empaquetado
+        if self.module_container is None:
+            self.module_container = tk.Frame(self.content_container, bg=COLORS["bg_darkest"])
+        
+        # Inicializar módulo si no existe
+        if self.cash_closure_module is None:
+            self.initialize_cash_closure_module()
+        
+        # Mostrar módulo
+        self.module_container.pack(fill=tk.BOTH, expand=True)
+        
+        # Actualizar resumen después
+        self.root.after(1000, self.update_summary)
+    
+    def initialize_inventory_module(self):
+        """Inicializa el módulo de Inventarios dentro de un Frame."""
+        # Limpiar contenido previo
+        for widget in self.module_container.winfo_children():
+            widget.destroy()
+        
+        # Crear el módulo pasándole el Frame directamente
+        self.inventory_module = InventoryGUI(self.module_container, service=self.inventory_service)
+    
+    def initialize_sales_module(self):
+        """Inicializa el módulo de Ventas dentro de un Frame."""
+        # Limpiar contenido previo
+        for widget in self.module_container.winfo_children():
+            widget.destroy()
+        
+        # Crear el módulo pasándole el Frame directamente
+        self.sales_module = SalesGUI(self.module_container)
+        
+        # Configurar referencia al inventario si existe
+        if self.inventory_module:
+            self.sales_module.inventory_gui_ref = self.inventory_module
+    
+    def initialize_cash_closure_module(self):
+        """Inicializa el módulo de Cierre de Caja dentro de un Frame."""
+        # Limpiar contenido previo
+        for widget in self.module_container.winfo_children():
+            widget.destroy()
+        
+        # Crear el módulo pasándole el Frame directamente
+        self.cash_closure_module = CashClosureGUI(self.module_container, service=self.cash_closure_service)
     
     def open_github(self):
         """Abre el repositorio de GitHub en el navegador."""

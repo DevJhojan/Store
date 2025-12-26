@@ -23,28 +23,37 @@ class InventoryGUI:
         self.parent = parent_window
         self.service = service or InventoryService()
         
-        # Crear ventana Toplevel si el padre es Tk
+        # Crear ventana Toplevel si el padre es Tk, o usar Frame si es Frame
         if isinstance(parent_window, tk.Tk):
             self.window = tk.Toplevel(parent_window)
+            is_frame = False
+        elif isinstance(parent_window, tk.Frame):
+            self.window = parent_window
+            is_frame = True
         else:
             self.window = parent_window
+            is_frame = False
         
-        # Configurar ventana
-        self.window.title("⚡ Gestión de Inventarios")
-        self.window.configure(bg=COLORS["bg_darkest"])
-        self.window.resizable(True, True)
-        
-        # Maximizar la ventana (compatible con todos los sistemas)
-        try:
-            self.window.attributes('-zoomed', True)
-        except:
+        # Configurar ventana (solo si no es Frame)
+        if not is_frame:
+            self.window.title("⚡ Gestión de Inventarios")
+            self.window.configure(bg=COLORS["bg_darkest"])
+            self.window.resizable(True, True)
+            
+            # Maximizar la ventana (compatible con todos los sistemas)
             try:
-                self.window.state('zoomed')
+                self.window.attributes('-zoomed', True)
             except:
-                self.window.update_idletasks()
-                width = self.window.winfo_screenwidth()
-                height = self.window.winfo_screenheight()
-                self.window.geometry(f"{width}x{height}")
+                try:
+                    self.window.state('zoomed')
+                except:
+                    self.window.update_idletasks()
+                    width = self.window.winfo_screenwidth()
+                    height = self.window.winfo_screenheight()
+                    self.window.geometry(f"{width}x{height}")
+        else:
+            # Si es Frame, solo configurar el fondo
+            self.window.configure(bg=COLORS["bg_darkest"])
         
         # Configurar estilos
         self.style_manager = StyleManager()

@@ -24,11 +24,16 @@ class SalesGUI:
         self.parent = parent_window
         self.service = service or VentaService()
         
-        # Crear ventana Toplevel si el padre es Tk
+        # Crear ventana Toplevel si el padre es Tk, o usar Frame si es Frame
         if isinstance(parent_window, tk.Tk):
             self.window = tk.Toplevel(parent_window)
+            is_frame = False
+        elif isinstance(parent_window, tk.Frame):
+            self.window = parent_window
+            is_frame = True
         else:
             self.window = parent_window
+            is_frame = False
         
         # Venta actual en proceso
         self.venta_actual = Venta()
@@ -47,28 +52,32 @@ class SalesGUI:
         # Referencia al módulo de inventario (para notificaciones)
         self.inventory_gui_ref = None
         
-        # Configurar ventana - MAXIMIZADA
-        self.window.title("💰 Sistema de Gestión de Ventas")
-        self.window.configure(bg=COLORS["bg_darkest"])
-        self.window.resizable(True, True)
-        
-        # Maximizar la ventana (compatible con todos los sistemas)
-        try:
-            # Intentar maximizar en Linux
-            self.window.attributes('-zoomed', True)
-        except:
+        # Configurar ventana (solo si no es Frame)
+        if not is_frame:
+            self.window.title("💰 Sistema de Gestión de Ventas")
+            self.window.configure(bg=COLORS["bg_darkest"])
+            self.window.resizable(True, True)
+            
+            # Maximizar la ventana (compatible con todos los sistemas)
             try:
-                # Intentar maximizar en Windows
-                self.window.state('zoomed')
+                # Intentar maximizar en Linux
+                self.window.attributes('-zoomed', True)
             except:
-                # Si nada funciona, obtener tamaño de pantalla y establecer geometría
-                self.window.update_idletasks()
-                width = self.window.winfo_screenwidth()
-                height = self.window.winfo_screenheight()
-                self.window.geometry(f"{width}x{height}")
-        
-        # Manejar cierre de ventana
-        self.window.protocol("WM_DELETE_WINDOW", self.on_close)
+                try:
+                    # Maximizar en Windows
+                    self.window.state('zoomed')
+                except:
+                    # Si nada funciona, obtener tamaño de pantalla y establecer geometría
+                    self.window.update_idletasks()
+                    width = self.window.winfo_screenwidth()
+                    height = self.window.winfo_screenheight()
+                    self.window.geometry(f"{width}x{height}")
+            
+            # Manejar cierre de ventana
+            self.window.protocol("WM_DELETE_WINDOW", self.on_close)
+        else:
+            # Si es Frame, solo configurar el fondo
+            self.window.configure(bg=COLORS["bg_darkest"])
         
         # Configurar estilos
         self.style_manager = StyleManager()
