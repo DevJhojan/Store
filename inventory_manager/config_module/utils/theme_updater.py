@@ -196,6 +196,15 @@ def update_widget_colors(widget: tk.Widget, colors: dict = None):
             except (tk.TclError, AttributeError):
                 pass
         
+        # Para ttk.Combobox - Actualizar estilos de ttk
+        elif widget_type == 'TCombobox':
+            try:
+                from tkinter import ttk
+                style = ttk.Style()
+                style.configure("TCombobox", fieldbackground=colors['bg_medium'], foreground=colors['text_primary'])
+            except (tk.TclError, AttributeError):
+                pass
+        
     except Exception:
         # Si hay algún error, continuar con los hijos
         pass
@@ -231,6 +240,18 @@ def update_application_theme(root: tk.Widget, style_manager=None):
     # Actualizar estilos de ttk
     try:
         style.configure("TCombobox", fieldbackground=c["bg_medium"], foreground=c["text_primary"])
+        # También actualizar Treeview y otros estilos
+        style.configure("Custom.Treeview", background=c["bg_dark"], foreground=c["text_primary"], fieldbackground=c["bg_dark"])
+        style.configure("Custom.Treeview.Heading", background=c["red_dark"], foreground=c["text_primary"])
+        style.map("Custom.Treeview", background=[("selected", c["red_primary"])], foreground=[("selected", c["text_primary"])])
+        style.configure("Accent.TButton", background=c["red_primary"], foreground=c["text_primary"])
+        style.map("Accent.TButton", background=[("active", c["red_bright"]), ("pressed", c["red_dark"])])
+        style.configure("Secondary.TButton", background=c["bg_medium"], foreground=c["text_primary"])
+        style.map("Secondary.TButton", background=[("active", c["bg_light"]), ("pressed", c["bg_dark"])])
+        style.configure("Custom.Vertical.TScrollbar", background=c["bg_medium"], troughcolor=c["bg_darkest"], arrowcolor=c["red_primary"])
+        style.map("Custom.Vertical.TScrollbar", background=[("active", c["red_primary"]), ("pressed", c["red_dark"])])
+        style.configure("Custom.Horizontal.TScrollbar", background=c["bg_medium"], troughcolor=c["bg_darkest"], arrowcolor=c["red_primary"])
+        style.map("Custom.Horizontal.TScrollbar", background=[("active", c["red_primary"]), ("pressed", c["red_dark"])])
     except:
         pass
     

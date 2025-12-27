@@ -467,6 +467,10 @@ class MainWindow:
         # Inicializar módulo (siempre reinicializamos para evitar problemas)
         self.initialize_inventory_module()
         
+        # Aplicar tema actual al módulo después de inicializarlo
+        if self.inventory_module:
+            self.inventory_module.apply_theme()
+        
         # Mostrar módulo
         self.module_container.pack(fill=tk.BOTH, expand=True)
         
@@ -516,6 +520,7 @@ class MainWindow:
     def initialize_inventory_module(self):
         """Inicializa el módulo de Inventarios dentro de un Frame."""
         # Crear el módulo pasándole el Frame directamente
+        # El módulo aplica el tema automáticamente en create_widgets()
         self.inventory_module = InventoryGUI(self.module_container, service=self.inventory_service)
     
     def initialize_sales_module(self):
