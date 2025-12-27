@@ -188,7 +188,7 @@ def create_categoria_table_widget(parent: tk.Frame) -> ttk.Treeview:
     
     # Frame para tabla
     table_frame = tk.Frame(parent, bg=c["bg_dark"], relief=tk.RAISED, bd=2)
-    table_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+    table_frame.pack(fill=tk.X, padx=15, pady=(0, 15))
     table_frame.grid_rowconfigure(1, weight=1)
     table_frame.grid_columnconfigure(0, weight=1)
     

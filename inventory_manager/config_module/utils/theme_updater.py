@@ -36,18 +36,44 @@ def update_widget_colors(widget: tk.Widget, colors: dict = None):
         # Mapear desde light theme al nuevo tema
         color_mapping[COLORS_LIGHT[key]] = colors[key]
     
+    # Mapeo directo para BACKGROUND colors (separado de text para evitar conflictos)
+    bg_color_map = {
+        # Dark theme backgrounds -> nuevo tema
+        '#0a0a0a': colors['bg_darkest'],  # bg_darkest dark
+        '#121212': colors['bg_dark'],      # bg_dark dark
+        '#1a1a1a': colors['bg_medium'],    # bg_medium dark
+        '#242424': colors['bg_light'],     # bg_light dark
+        # Light theme backgrounds -> nuevo tema
+        '#f5f5f5': colors['bg_darkest'],   # bg_darkest light
+        '#ffffff': colors['bg_dark'],      # bg_dark light (solo para backgrounds)
+        '#e8e8e8': colors['bg_medium'],    # bg_medium light
+        '#d0d0d0': colors['bg_light'],     # bg_light light
+    }
+    
+    # Mapeo específico para TEXT colors
+    text_color_map = {
+        '#ffffff': colors['text_primary'],   # text primary dark -> nuevo tema
+        '#b0b0b0': colors['text_secondary'], # text secondary dark -> nuevo tema
+        '#666666': colors['text_muted'],     # text muted (igual en ambos temas)
+        '#000000': colors['text_primary'],   # text primary light -> nuevo tema
+        '#333333': colors['text_secondary'], # text secondary light -> nuevo tema
+    }
+    
     # Actualizar colores del widget actual según su tipo
     widget_type = widget.winfo_class()
     
     try:
-        # Para Frames - Actualizar SIEMPRE si el color no coincide con el nuevo tema
+        # Para Frames - SIEMPRE actualizar si el color no coincide con el nuevo tema
         if widget_type in ('Frame', 'TFrame'):
             try:
                 current_bg = widget.cget('bg')
                 # Si el color actual NO es del nuevo tema, actualizarlo
                 if current_bg not in colors.values():
+                    # Primero intentar con el mapeo directo de backgrounds
+                    if current_bg in bg_color_map:
+                        widget.configure(bg=bg_color_map[current_bg])
                     # Si el color actual está en el mapeo, actualizarlo directamente
-                    if current_bg in color_mapping:
+                    elif current_bg in color_mapping:
                         widget.configure(bg=color_mapping[current_bg])
                     # También verificar si está en los diccionarios de temas originales
                     elif current_bg in all_dark_colors:
@@ -58,20 +84,9 @@ def update_widget_colors(widget: tk.Widget, colors: dict = None):
                         key = _get_color_key_by_value(current_bg, COLORS_LIGHT)
                         if key and key in colors:
                             widget.configure(bg=colors[key])
-                    # Si no coincide con ningún tema, intentar usar bg_darkest como fallback
+                    # Si no coincide con ningún tema conocido, usar bg_darkest como fallback
                     else:
-                        # Intentar usar el mismo color del padre si existe
-                        try:
-                            if widget.master:
-                                parent_bg = widget.master.cget('bg')
-                                if parent_bg in colors.values():
-                                    widget.configure(bg=parent_bg)
-                                else:
-                                    widget.configure(bg=colors['bg_darkest'])
-                            else:
-                                widget.configure(bg=colors['bg_darkest'])
-                        except:
-                            widget.configure(bg=colors['bg_darkest'])
+                        widget.configure(bg=colors['bg_darkest'])
             except (tk.TclError, AttributeError):
                 pass
         
@@ -81,7 +96,10 @@ def update_widget_colors(widget: tk.Widget, colors: dict = None):
                 # Actualizar bg
                 current_bg = widget.cget('bg')
                 if current_bg not in colors.values():
-                    if current_bg in color_mapping:
+                    # Intentar con mapeo directo de backgrounds primero
+                    if current_bg in bg_color_map:
+                        widget.configure(bg=bg_color_map[current_bg])
+                    elif current_bg in color_mapping:
                         widget.configure(bg=color_mapping[current_bg])
                     elif current_bg in all_dark_colors:
                         key = _get_color_key_by_value(current_bg, COLORS_DARK)
@@ -92,11 +110,14 @@ def update_widget_colors(widget: tk.Widget, colors: dict = None):
                         if key and key in colors:
                             widget.configure(bg=colors[key])
                 
-                # Actualizar fg
+                # Actualizar fg (text color)
                 current_fg = widget.cget('fg')
                 # Verificar si el fg actual NO es del nuevo tema
                 if current_fg not in colors.values():
-                    if current_fg in color_mapping:
+                    # Primero intentar con el mapeo específico de texto
+                    if current_fg in text_color_map:
+                        widget.configure(fg=text_color_map[current_fg])
+                    elif current_fg in color_mapping:
                         widget.configure(fg=color_mapping[current_fg])
                     elif current_fg in all_dark_colors:
                         key = _get_color_key_by_value(current_fg, COLORS_DARK)
@@ -106,17 +127,6 @@ def update_widget_colors(widget: tk.Widget, colors: dict = None):
                         key = _get_color_key_by_value(current_fg, COLORS_LIGHT)
                         if key and key in colors:
                             widget.configure(fg=colors[key])
-                    # Para texto, también verificar colores de texto específicos
-                    elif current_fg in ['#ffffff', '#b0b0b0', '#666666', '#000000', '#333333']:
-                        fg_map = {
-                            '#ffffff': colors['text_primary'],
-                            '#b0b0b0': colors['text_secondary'],
-                            '#666666': colors['text_muted'],
-                            '#000000': colors['text_primary'],
-                            '#333333': colors['text_secondary'],
-                        }
-                        if current_fg in fg_map:
-                            widget.configure(fg=fg_map[current_fg])
             except (tk.TclError, AttributeError):
                 pass
         

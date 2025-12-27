@@ -220,7 +220,7 @@ class ConfigGUI:
         
         # Sección de categorías
         categoria_section = tk.Frame(main_frame, bg=c["bg_darkest"])
-        categoria_section.pack(fill=tk.BOTH, expand=True, pady=(0, 15))
+        categoria_section.pack(fill=tk.X, pady=(0, 15))
         
         # Resumen de categoría
         self.summary_labels = create_categoria_summary_widget(categoria_section)
@@ -241,13 +241,19 @@ class ConfigGUI:
         self.categoria_tree = create_categoria_table_widget(categoria_section)
         self.categoria_tree.bind("<<TreeviewSelect>>", self._on_categoria_selected_event)
         
-        # Actualizar scrollregion inicial
-        self.window.update_idletasks()
-        try:
-            if self.canvas.winfo_exists():
-                self.canvas.configure(scrollregion=self.canvas.bbox("all"))
-        except tk.TclError:
-            pass
+        # Actualizar scrollregion inicial después de que todos los widgets estén creados
+        def update_scrollregion():
+            try:
+                self.window.update_idletasks()
+                if self.canvas.winfo_exists():
+                    bbox = self.canvas.bbox("all")
+                    if bbox:
+                        self.canvas.configure(scrollregion=bbox)
+            except tk.TclError:
+                pass
+        
+        # Actualizar después de un breve delay para asegurar que todos los widgets estén renderizados
+        self.window.after(100, update_scrollregion)
     
     def _on_categoria_selected_event(self, event):
         """Wrapper para el evento de selección de categoría."""
