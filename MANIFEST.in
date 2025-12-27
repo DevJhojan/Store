@@ -1,4 +1,4 @@
 include README.md
 include setup.py
-recursive-include inventory_manager *.py
+recursive-include app *.py
 

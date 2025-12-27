@@ -28,7 +28,7 @@ def build_linux_executable():
             "--name=StoreManagement",
             "--onefile",
             "--windowed",
-            "--add-data=inventory_manager:inventory_manager",
+            "--add-data=app:app",
             "--hidden-import=tkinter",
             "--hidden-import=sqlite3",
             "--hidden-import=reportlab",

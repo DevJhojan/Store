@@ -17,7 +17,7 @@ Sistema completo de gestión de ventas con interfaz gráfica desarrollado con Py
 ## Estructura del Proyecto
 
 ```
-inventory_manager/
+app/
 ├── __init__.py              # Paquete principal
 ├── main_window.py           # Ventana principal del sistema
 ├── config/                  # Configuración
@@ -111,7 +111,7 @@ La aplicación se abrirá con una ventana principal desde la cual podrás accede
 ### Uso programático
 
 ```python
-from inventory_manager import (
+from app import (
     InventoryService, 
     Producto,
     MainWindow,

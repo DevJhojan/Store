@@ -5,7 +5,7 @@ import tkinter as tk
 sys.path.insert(0, '/home/devjdtp/Proyectos/Store')
 
 try:
-    from inventory_manager.main_window import MainWindow
+    from app.main_window import MainWindow
     
     print("="*60)
     print("PROBANDO VENTANA PRINCIPAL")

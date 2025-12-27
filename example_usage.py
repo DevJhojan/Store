@@ -1,5 +1,5 @@
 """Ejemplo de uso del sistema de inventario como módulo."""
-from inventory_manager import InventoryService, Producto
+from app import InventoryService, Producto
 
 
 def ejemplo_uso_basico():

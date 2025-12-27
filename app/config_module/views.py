@@ -13,8 +13,7 @@ from .widgets.tienda_widget import create_tienda_widget
 from .widgets.categoria_widget import (
     create_categoria_form_widget,
     create_categoria_buttons_widget,
-    create_categoria_table_widget,
-    create_categoria_summary_widget
+    create_categoria_table_widget
 )
 from .handlers.categoria_handlers import (
     refresh_categoria_table,
@@ -84,7 +83,6 @@ class ConfigGUI:
         self.categoria_seleccionada_id: Optional[int] = None
         self.form_widgets: Dict[str, tk.Widget] = {}
         self.categoria_tree = None
-        self.summary_labels: Dict[str, tk.Label] = {}
         self.tienda_widgets: Dict[str, tk.Widget] = {}
         self.scrollable_frame = None
         self.canvas = None
@@ -222,9 +220,6 @@ class ConfigGUI:
         categoria_section = tk.Frame(main_frame, bg=c["bg_darkest"])
         categoria_section.pack(fill=tk.X, pady=(0, 15))
         
-        # Resumen de categoría
-        self.summary_labels = create_categoria_summary_widget(categoria_section)
-        
         # Formulario de categorías
         self.form_widgets = create_categoria_form_widget(categoria_section)
         
@@ -254,6 +249,29 @@ class ConfigGUI:
         
         # Actualizar después de un breve delay para asegurar que todos los widgets estén renderizados
         self.window.after(100, update_scrollregion)
+        
+        # Aplicar tema actual al inicializar
+        self.apply_theme()
+    
+    def apply_theme(self):
+        """Aplica el tema actual a todos los widgets del módulo."""
+        from .utils.theme_updater import update_application_theme
+        from ..config.settings import COLORS
+        
+        # Recargar StyleManager con el tema actual
+        self.style_manager = StyleManager()
+        
+        # Actualizar todos los widgets del módulo
+        update_application_theme(self.window, self.style_manager)
+        
+        # Actualizar manualmente el estilo del Combobox de tema si existe
+        if hasattr(self, 'theme_widget') and hasattr(self.theme_widget, 'theme_combo'):
+            try:
+                from tkinter import ttk
+                style = ttk.Style()
+                style.configure("TCombobox", fieldbackground=COLORS["bg_medium"], foreground=COLORS["text_primary"])
+            except:
+                pass
     
     def _on_categoria_selected_event(self, event):
         """Wrapper para el evento de selección de categoría."""
@@ -261,8 +279,7 @@ class ConfigGUI:
             event,
             self.categoria_tree,
             self.categoria_service,
-            self.form_widgets,
-            self.summary_labels
+            self.form_widgets
         )
     
     def on_theme_change(self, theme_name: str):
@@ -318,8 +335,7 @@ class ConfigGUI:
             self.window,
             self.form_widgets,
             self.categoria_service,
-            self.refresh_categorias,
-            self.summary_labels
+            self.refresh_categorias
         )
         self.categoria_seleccionada_id = None
     
@@ -330,8 +346,7 @@ class ConfigGUI:
             self.categoria_seleccionada_id,
             self.form_widgets,
             self.categoria_service,
-            self.refresh_categorias,
-            self.summary_labels
+            self.refresh_categorias
         )
     
     def eliminar_categoria(self):
@@ -341,13 +356,12 @@ class ConfigGUI:
             self.categoria_seleccionada_id,
             self.form_widgets,
             self.categoria_service,
-            self.refresh_categorias,
-            self.summary_labels
+            self.refresh_categorias
         )
     
     def limpiar_formulario(self):
         """Limpia el formulario de categorías."""
-        limpiar_formulario_categoria(self.form_widgets, self.categoria_tree, self.summary_labels)
+        limpiar_formulario_categoria(self.form_widgets, self.categoria_tree)
         self.categoria_seleccionada_id = None
     
     def refresh_categorias(self):

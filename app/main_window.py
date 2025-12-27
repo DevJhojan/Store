@@ -526,6 +526,7 @@ class MainWindow:
     def initialize_sales_module(self):
         """Inicializa el módulo de Ventas dentro de un Frame."""
         # Crear el módulo pasándole el Frame directamente
+        # El módulo aplica el tema automáticamente en create_widgets_with_scroll()
         self.sales_module = SalesGUI(self.module_container)
         
         # Configurar referencia al inventario (se recreará si es necesario)
@@ -534,6 +535,7 @@ class MainWindow:
     def initialize_cash_closure_module(self):
         """Inicializa el módulo de Cierre de Caja dentro de un Frame."""
         # Crear el módulo pasándole el Frame directamente
+        # El módulo aplica el tema automáticamente en create_widgets_with_scroll()
         self.cash_closure_module = CashClosureGUI(self.module_container, service=self.cash_closure_service)
     
     def show_config(self):
@@ -557,6 +559,7 @@ class MainWindow:
         """Inicializa el módulo de Configuración dentro de un Frame."""
         from .config_module.services.categoria_service import CategoriaService
         categoria_service = CategoriaService()
+        # El módulo aplica el tema automáticamente en create_widgets()
         self.config_module = ConfigGUI(self.module_container, categoria_service=categoria_service)
     
     def open_github(self):

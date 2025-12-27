@@ -148,6 +148,7 @@ class CashClosureGUI:
         
         # Guardar referencia al canvas
         self.canvas = canvas
+        self.scrollable_frame = scrollable_frame
         
         # Frame principal dentro del scrollable
         main_frame = scrollable_frame
@@ -590,6 +591,20 @@ class CashClosureGUI:
             anchor=tk.E
         )
         self.cantidad_ventas_label.pack(fill=tk.X, pady=(5, 0))
+        
+        # Aplicar tema actual al inicializar
+        self.apply_theme()
+    
+    def apply_theme(self):
+        """Aplica el tema actual a todos los widgets del módulo."""
+        from ...config_module.utils.theme_updater import update_application_theme
+        from ...config.settings import COLORS
+        
+        # Recargar StyleManager con el tema actual
+        self.style_manager = StyleManager()
+        
+        # Actualizar todos los widgets del módulo
+        update_application_theme(self.window, self.style_manager)
     
     def parsear_fecha(self, fecha_str: str) -> Optional[date]:
         """Parsea una fecha en formato YYYY-MM-DD."""

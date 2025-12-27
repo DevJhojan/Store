@@ -219,6 +219,9 @@ class SalesGUI:
         # Guardar referencias
         self.canvas = canvas
         self.scrollable_frame = scrollable_frame
+        
+        # Aplicar tema actual al inicializar
+        self.apply_theme()
     
     def create_widgets(self, parent: tk.Frame):
         """Crear todos los widgets de la interfaz."""
@@ -1256,6 +1259,26 @@ class SalesGUI:
         self.product_combo.set("")
         self.productos_encontrados = []
         self.load_available_products()
+    
+    def apply_theme(self):
+        """Aplica el tema actual a todos los widgets del módulo."""
+        from ..config_module.utils.theme_updater import update_application_theme
+        from ..config.settings import COLORS
+        
+        # Recargar StyleManager con el tema actual
+        self.style_manager = StyleManager()
+        
+        # Actualizar todos los widgets del módulo
+        update_application_theme(self.window, self.style_manager)
+        
+        # Actualizar manualmente el estilo del Combobox de productos si existe
+        if hasattr(self, 'product_combo') and self.product_combo:
+            try:
+                from tkinter import ttk
+                style = ttk.Style()
+                style.configure("TCombobox", fieldbackground=COLORS["bg_medium"], foreground=COLORS["text_primary"])
+            except:
+                pass
     
     def on_close(self):
         """Maneja el cierre de la ventana."""

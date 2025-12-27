@@ -1,7 +1,7 @@
 """Punto de entrada principal para la aplicación de gestión."""
 import tkinter as tk
 
-from inventory_manager.main_window import MainWindow
+from app.main_window import MainWindow
 
 
 def main():
