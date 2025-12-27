@@ -252,6 +252,8 @@ def update_application_theme(root: tk.Widget, style_manager=None):
         style.map("Custom.Vertical.TScrollbar", background=[("active", c["red_primary"]), ("pressed", c["red_dark"])])
         style.configure("Custom.Horizontal.TScrollbar", background=c["bg_medium"], troughcolor=c["bg_darkest"], arrowcolor=c["red_primary"])
         style.map("Custom.Horizontal.TScrollbar", background=[("active", c["red_primary"]), ("pressed", c["red_dark"])])
+        style.configure("Nav.TButton", background=c["bg_dark"], foreground=c["text_primary"])
+        style.map("Nav.TButton", background=[("active", c["red_primary"]), ("pressed", c["red_dark"])], foreground=[("active", c["text_primary"])])
     except:
         pass
     

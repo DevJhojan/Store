@@ -106,4 +106,20 @@ class StyleManager:
             arrowcolor=[("active", c["red_bright"])],
             troughcolor=[("active", c["bg_darkest"])]
         )
+        
+        # Estilo para botones de navegación
+        self.style.configure(
+            "Nav.TButton",
+            background=c["bg_dark"],
+            foreground=c["text_primary"],
+            font=("Consolas", 11, "bold"),
+            padding=(15, 10),
+            borderwidth=2,
+            relief="flat"
+        )
+        self.style.map(
+            "Nav.TButton",
+            background=[("active", c["red_primary"]), ("pressed", c["red_dark"])],
+            foreground=[("active", c["text_primary"])]
+        )
 

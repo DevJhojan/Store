@@ -315,7 +315,10 @@ class ConfigGUI:
                 update_application_theme(root_to_update, self.style_manager)
             
             # También recargar estilos del main_window si existe
-            if hasattr(self.parent, 'style_manager'):
+            if hasattr(self.parent, 'apply_theme'):
+                # Llamar al método apply_theme del MainWindow si existe
+                self.parent.apply_theme()
+            elif hasattr(self.parent, 'style_manager'):
                 self.parent.style_manager = StyleManager()
                 # Actualizar también desde el main_window
                 if hasattr(self.parent, 'root'):

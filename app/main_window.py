@@ -7,6 +7,7 @@ from datetime import datetime, date
 from .config.settings import Settings, COLORS, set_theme, get_current_theme
 from .ui.styles import StyleManager
 from .config_module.services.theme_service import ThemeService
+from .config_module.services.tienda_service import TiendaService
 from .inventory.views import InventoryGUI
 from .sales.views import SalesGUI
 from .cash_closure.ui.views import CashClosureGUI
@@ -71,9 +72,13 @@ class MainWindow:
         self.venta_repository = VentaRepository()
         self.inventory_service = InventoryService(self.product_repository)
         self.cash_closure_service = CashClosureService()
+        self.tienda_service = TiendaService()
         
         # Crear interfaz
         self.create_widgets()
+        
+        # Aplicar tema actual al inicializar
+        self.apply_theme()
         
         # Mostrar resumen inicialmente
         self.show_summary()
@@ -202,23 +207,27 @@ class MainWindow:
         # Línea decorativa superior
         tk.Frame(title_frame, bg=colors["red_primary"], height=3).pack(fill=tk.X, pady=(0, 15))
         
-        title_label = tk.Label(
+        # Labels de título y subtítulo (se actualizarán con información de la tienda)
+        self.summary_title_label = tk.Label(
             title_frame,
             text="◆ RESUMEN DEL SISTEMA DE GESTIÓN ◆",
             font=(Settings.FONT_PRIMARY, 20, "bold"),
             fg=colors["red_primary"],
             bg=colors["bg_darkest"]
         )
-        title_label.pack()
+        self.summary_title_label.pack()
         
-        subtitle_label = tk.Label(
+        self.summary_subtitle_label = tk.Label(
             title_frame,
             text="[ Vista General de la Operación ]",
             font=(Settings.FONT_PRIMARY, 10),
             fg=colors["text_muted"],
             bg=colors["bg_darkest"]
         )
-        subtitle_label.pack(pady=(5, 0))
+        self.summary_subtitle_label.pack(pady=(5, 0))
+        
+        # Actualizar con información de la tienda
+        self.update_summary_title()
         
         # Línea decorativa inferior
         tk.Frame(title_frame, bg=colors["red_primary"], height=3).pack(fill=tk.X, pady=(15, 0))
@@ -438,11 +447,72 @@ class MainWindow:
             # Asegurar que el layout se actualice
             self.content_container.update_idletasks()
     
+    def apply_theme(self):
+        """Aplica el tema actual a todos los widgets del MainWindow."""
+        from .config_module.utils.theme_updater import update_application_theme
+        from .config.settings import COLORS
+        
+        # Recargar StyleManager con el tema actual
+        self.style_manager = StyleManager()
+        
+        # Actualizar estilo de botones de navegación
+        c = COLORS
+        self.style_manager.style.configure(
+            "Nav.TButton",
+            background=c["bg_dark"],
+            foreground=c["text_primary"],
+            font=(Settings.FONT_PRIMARY, 11, "bold"),
+            padding=(15, 10),
+            borderwidth=2,
+            relief="flat"
+        )
+        self.style_manager.style.map(
+            "Nav.TButton",
+            background=[("active", c["red_primary"]), ("pressed", c["red_dark"])],
+            foreground=[("active", c["text_primary"])]
+        )
+        
+        # Actualizar todos los widgets del MainWindow
+        update_application_theme(self.root, self.style_manager)
+        
+        # Actualizar colores del nav_bar_frame si existe
+        if hasattr(self, 'nav_bar_frame') and self.nav_bar_frame:
+            try:
+                self.nav_bar_frame.configure(bg=c["bg_medium"])
+                # Actualizar frames internos
+                for child in self.nav_bar_frame.winfo_children():
+                    if isinstance(child, tk.Frame):
+                        child.configure(bg=c["bg_medium"])
+                        # Actualizar frames hijos
+                        for subchild in child.winfo_children():
+                            if isinstance(subchild, tk.Frame):
+                                subchild.configure(bg=c["bg_medium"])
+            except:
+                pass
+    
+    def update_summary_title(self):
+        """Actualiza el título y subtítulo del resumen con la información de la tienda."""
+        try:
+            tienda_info = self.tienda_service.obtener_informacion_tienda()
+            if tienda_info and tienda_info.nombre:
+                # Actualizar título con el nombre de la tienda
+                if hasattr(self, 'summary_title_label'):
+                    self.summary_title_label.config(text=f"◆ {tienda_info.nombre.upper()} ◆")
+                
+                # Actualizar subtítulo con la descripción de la tienda
+                if hasattr(self, 'summary_subtitle_label'):
+                    descripcion = tienda_info.descripcion if tienda_info.descripcion else "[ Vista General de la Operación ]"
+                    self.summary_subtitle_label.config(text=f"[ {descripcion} ]")
+        except Exception:
+            # Si hay algún error, mantener los valores por defecto
+            pass
+    
     def show_summary(self):
         """Muestra el resumen del sistema."""
         self.hide_current_content()
         if self.summary_frame:
             self.summary_frame.pack(fill=tk.BOTH, expand=True)
+        self.update_summary_title()
         self.update_summary()
     
     def cleanup_module_container(self):
