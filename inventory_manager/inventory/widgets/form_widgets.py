@@ -1,23 +1,26 @@
 """Widgets del formulario de producto."""
 import tkinter as tk
-from typing import Dict, Optional, Callable
+from tkinter import ttk
+from typing import Dict, Optional, Callable, Tuple, Union
 
 from ...config.settings import Settings, COLORS
 
 
 def create_form_widgets(
     parent: tk.Frame,
-    on_calculo_change: Optional[Callable] = None
-) -> Dict[str, tk.Entry]:
+    on_calculo_change: Optional[Callable] = None,
+    categorias: Optional[list] = None
+) -> Tuple[Dict[str, Union[tk.Entry, ttk.Combobox]], tk.Entry]:
     """
     Crea los widgets del formulario de producto.
     
     Args:
         parent: Frame padre
         on_calculo_change: Callback opcional para cuando cambian los campos de cálculo
+        categorias: Lista de categorías para el dropdown
         
     Returns:
-        Dict con las referencias a los entries del formulario
+        Tuple con (Dict de widgets, Entry de ganancia)
     """
     c = COLORS
     
@@ -27,7 +30,7 @@ def create_form_widgets(
     form_frame.grid_columnconfigure(1, weight=1)
     form_frame.grid_columnconfigure(2, weight=1)
     
-    entries: Dict[str, tk.Entry] = {}
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]] = {}
     
     # Fila 1: Código, Nombre, Categoría
     # Código (sincronizado con panel lateral)
@@ -71,7 +74,7 @@ def create_form_widgets(
     )
     entries["nombre"].grid(row=1, column=1, sticky="ew", padx=(0, 10), pady=(0, 15))
     
-    # Categoría
+    # Categoría (Combobox)
     categoria_label = tk.Label(
         form_frame,
         text="Categoría",
@@ -81,15 +84,21 @@ def create_form_widgets(
     )
     categoria_label.grid(row=0, column=2, sticky="w", padx=0, pady=(0, 5))
     
-    entries["categoria"] = tk.Entry(
+    # Obtener nombres de categorías para el combobox
+    categoria_values = [cat.nombre if hasattr(cat, 'nombre') else str(cat) for cat in (categorias or [])]
+    
+    entries["categoria"] = ttk.Combobox(
         form_frame,
+        values=categoria_values,
         font=(Settings.FONT_PRIMARY, 11),
-        bg=c["bg_medium"],
-        fg=c["text_primary"],
-        relief=tk.FLAT,
-        insertbackground=c["text_primary"]
+        state="readonly" if categoria_values else "normal",
+        width=20
     )
     entries["categoria"].grid(row=1, column=2, sticky="ew", padx=0, pady=(0, 15))
+    
+    # Configurar estilo del combobox para que se vea bien con el tema oscuro
+    style = ttk.Style()
+    style.configure("TCombobox", fieldbackground=c["bg_medium"], foreground=c["text_primary"])
     
     # Fila 2: Cantidad, Precio unitario, Ganancia
     # Cantidad

@@ -4,11 +4,13 @@ from tkinter import ttk
 import webbrowser
 from datetime import datetime, date
 
-from .config.settings import Settings, COLORS
+from .config.settings import Settings, COLORS, set_theme, get_current_theme
 from .ui.styles import StyleManager
+from .config_module.services.theme_service import ThemeService
 from .inventory.views import InventoryGUI
 from .sales.views import SalesGUI
 from .cash_closure.ui.views import CashClosureGUI
+from .config_module.views import ConfigGUI
 from .repository.product_repository import ProductRepository
 from .sales.repository.venta_repository import VentaRepository
 from .services.inventory_service import InventoryService
@@ -52,11 +54,17 @@ class MainWindow:
         self.inventory_module = None
         self.sales_module = None
         self.cash_closure_module = None
+        self.config_module = None
         
         # Frame contenedor principal para el contenido
         self.content_container = None
         self.summary_frame = None
         self.current_module_frame = None
+        
+        # Cargar tema actual al iniciar
+        theme_service = ThemeService()
+        tema_actual = theme_service.obtener_tema_actual()
+        set_theme(tema_actual)
         
         # Inicializar servicios para obtener datos del resumen
         self.product_repository = ProductRepository()
@@ -351,6 +359,16 @@ class MainWindow:
         )
         btn_cierre.pack(side=tk.LEFT, padx=5, fill=tk.BOTH, expand=True)
         
+        # Botón Configuración
+        btn_config = ttk.Button(
+            btn_frame,
+            text="⚙️ Configuración",
+            command=self.show_config,
+            style="Nav.TButton",
+            width=20
+        )
+        btn_config.pack(side=tk.LEFT, padx=5, fill=tk.BOTH, expand=True)
+        
         # Crear estilo para botones de navegación
         self.style_manager.style.configure(
             "Nav.TButton",
@@ -512,6 +530,29 @@ class MainWindow:
         """Inicializa el módulo de Cierre de Caja dentro de un Frame."""
         # Crear el módulo pasándole el Frame directamente
         self.cash_closure_module = CashClosureGUI(self.module_container, service=self.cash_closure_service)
+    
+    def show_config(self):
+        """Muestra el módulo de Configuración."""
+        self.hide_current_content()
+        
+        # Asegurar que el module_container exista
+        if self.module_container is None:
+            self.module_container = tk.Frame(self.content_container, bg=COLORS["bg_darkest"])
+        
+        # Limpiar el contenedor antes de mostrar otro módulo
+        self.cleanup_module_container()
+        
+        # Inicializar módulo
+        self.initialize_config_module()
+        
+        # Mostrar módulo
+        self.module_container.pack(fill=tk.BOTH, expand=True)
+    
+    def initialize_config_module(self):
+        """Inicializa el módulo de Configuración dentro de un Frame."""
+        from .config_module.services.categoria_service import CategoriaService
+        categoria_service = CategoriaService()
+        self.config_module = ConfigGUI(self.module_container, categoria_service=categoria_service)
     
     def open_github(self):
         """Abre el repositorio de GitHub en el navegador."""

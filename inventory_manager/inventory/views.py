@@ -66,9 +66,12 @@ class InventoryGUI:
         self.style_manager = StyleManager()
         
         # Diccionario de campos de entrada
-        self.entries: Dict[str, tk.Entry] = {}
+        self.entries: Dict[str, tk.Widget] = {}
         self.ganancia_entry: Optional[tk.Entry] = None
         self.codigo_lateral_entry: Optional[tk.Entry] = None
+        
+        # Cargar categorías
+        self._cargar_categorias()
         
         # Producto seleccionado para actualizar
         self.producto_seleccionado: Optional[str] = None
@@ -104,9 +107,11 @@ class InventoryGUI:
         self.codigo_lateral_entry = lateral_entries["codigo_lateral"]
         
         # ========== FORMULARIO PRINCIPAL (Parte Superior) ==========
+        categorias = self._obtener_categorias()
         form_entries, self.ganancia_entry = create_form_widgets(
             main_frame,
-            on_calculo_change=self.on_calculo_cambio
+            on_calculo_change=self.on_calculo_cambio,
+            categorias=categorias
         )
         self.entries.update(form_entries)
         
@@ -210,4 +215,30 @@ class InventoryGUI:
     def refresh(self):
         """Actualiza la tabla y el resumen."""
         refresh_table(self.tree, self.service, self.summary_labels)
+    
+    def _cargar_categorias(self):
+        """Carga las categorías disponibles."""
+        try:
+            from ..config_module.services.categoria_service import CategoriaService
+            categoria_service = CategoriaService()
+            self._categoria_service = categoria_service
+        except ImportError:
+            self._categoria_service = None
+    
+    def _obtener_categorias(self):
+        """Obtiene la lista de categorías."""
+        if hasattr(self, '_categoria_service') and self._categoria_service:
+            try:
+                return self._categoria_service.obtener_todas_las_categorias()
+            except:
+                return []
+        return []
+    
+    def actualizar_categorias_dropdown(self):
+        """Actualiza el dropdown de categorías con las categorías más recientes."""
+        if "categoria" in self.entries:
+            categorias = self._obtener_categorias()
+            categoria_values = [cat.nombre if hasattr(cat, 'nombre') else str(cat) for cat in categorias]
+            if hasattr(self.entries["categoria"], 'configure'):
+                self.entries["categoria"].configure(values=categoria_values)
 

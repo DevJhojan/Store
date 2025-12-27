@@ -1,7 +1,7 @@
 """Handlers para operaciones CRUD de productos."""
 import tkinter as tk
-from tkinter import messagebox
-from typing import Dict, Optional
+from tkinter import messagebox, ttk
+from typing import Dict, Optional, Union
 
 from ...services.inventory_service import InventoryService
 from .form_handlers import get_form_data, clear_form
@@ -9,7 +9,7 @@ from .form_handlers import get_form_data, clear_form
 
 def agregar_producto(
     window: tk.Widget,
-    entries: Dict[str, tk.Entry],
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]],
     ganancia_entry: tk.Entry,
     tree: tk.Widget,
     codigo_lateral_entry: tk.Entry,
@@ -57,7 +57,7 @@ def agregar_producto(
 def actualizar_producto(
     window: tk.Widget,
     producto_seleccionado: Optional[str],
-    entries: Dict[str, tk.Entry],
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]],
     ganancia_entry: tk.Entry,
     tree: tk.Widget,
     codigo_lateral_entry: tk.Entry,
@@ -118,7 +118,7 @@ def actualizar_producto(
 def eliminar_producto(
     window: tk.Widget,
     producto_seleccionado: Optional[str],
-    entries: Dict[str, tk.Entry],
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]],
     ganancia_entry: tk.Entry,
     tree: tk.Widget,
     codigo_lateral_entry: tk.Entry,

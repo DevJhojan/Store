@@ -1,6 +1,7 @@
 """Handlers para eventos del formulario."""
 import tkinter as tk
-from typing import Dict, Optional
+from tkinter import ttk
+from typing import Dict, Optional, Union
 
 from ...services.inventory_service import InventoryService
 from ...utils.validators import validate_fields, parse_numeric_field
@@ -10,7 +11,7 @@ from ..utils.calculations import calcular_valores_producto
 
 def load_product_to_form(
     producto,
-    entries: Dict[str, tk.Entry],
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]],
     ganancia_entry: tk.Entry,
     codigo_lateral_entry: tk.Entry
 ):
@@ -36,8 +37,14 @@ def load_product_to_form(
     entries["nombre"].delete(0, tk.END)
     entries["nombre"].insert(0, producto.nombre)
     
-    entries["categoria"].delete(0, tk.END)
-    entries["categoria"].insert(0, producto.categoria)
+    # Manejar categoría (puede ser Entry o Combobox)
+    if hasattr(entries["categoria"], 'set'):
+        # Es un Combobox
+        entries["categoria"].set(producto.categoria)
+    else:
+        # Es un Entry
+        entries["categoria"].delete(0, tk.END)
+        entries["categoria"].insert(0, producto.categoria)
     
     entries["cantidad"].delete(0, tk.END)
     entries["cantidad"].insert(0, str(producto.cantidad))
@@ -50,7 +57,7 @@ def load_product_to_form(
 
 
 def clear_form(
-    entries: Dict[str, tk.Entry],
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]],
     ganancia_entry: tk.Entry,
     codigo_lateral_entry: tk.Entry,
     tree: tk.Widget,
@@ -82,7 +89,14 @@ def clear_form(
     codigo_lateral_entry.config(state="readonly")
     
     entries["nombre"].delete(0, tk.END)
-    entries["categoria"].delete(0, tk.END)
+    
+    # Manejar categoría (puede ser Entry o Combobox)
+    if hasattr(entries["categoria"], 'set'):
+        # Es un Combobox
+        entries["categoria"].set("")
+    else:
+        # Es un Entry
+        entries["categoria"].delete(0, tk.END)
     entries["cantidad"].delete(0, tk.END)
     entries["precio_unitario"].delete(0, tk.END)
     
@@ -95,7 +109,7 @@ def clear_form(
 
 
 def get_form_data(
-    entries: Dict[str, tk.Entry],
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]],
     ganancia_entry: tk.Entry,
     service: InventoryService
 ) -> tuple:

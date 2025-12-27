@@ -1,7 +1,7 @@
 """Handlers para eventos de la tabla."""
 import tkinter as tk
 from tkinter import ttk
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from ...services.inventory_service import InventoryService
 from ..utils.calculations import calcular_valores_producto
@@ -87,7 +87,7 @@ def on_producto_seleccionado(
     event,
     tree: ttk.Treeview,
     service: InventoryService,
-    entries: Dict[str, tk.Entry],
+    entries: Dict[str, Union[tk.Entry, ttk.Combobox]],
     ganancia_entry: tk.Entry,
     codigo_lateral_entry: tk.Entry
 ) -> Optional[str]:
