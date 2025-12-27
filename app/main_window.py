@@ -307,7 +307,12 @@ class MainWindow:
         content_label.pack(anchor="w", fill=tk.X)
         
         # Guardar referencia para actualizar
-        return {"frame": card_frame, "content_label": content_label}
+        return {
+            "frame": card_frame, 
+            "content_label": content_label,
+            "card_container": card_container,
+            "title_label": title_label
+        }
     
     def create_navigation_bar(self, parent: tk.Frame, colors: dict):
         """Crea la barra de navegación con botones para los módulos."""
@@ -447,6 +452,90 @@ class MainWindow:
             # Asegurar que el layout se actualice
             self.content_container.update_idletasks()
     
+    def update_summary_cards_colors(self):
+        """Actualiza los colores de las tarjetas del resumen con el tema actual."""
+        from .config.settings import COLORS
+        c = COLORS
+        
+        # Actualizar summary_colors para que update_summary use los nuevos colores
+        if hasattr(self, 'summary_colors'):
+            self.summary_colors = c
+        
+        # Actualizar summary_frame principal si existe
+        if hasattr(self, 'summary_frame') and self.summary_frame:
+            try:
+                self.summary_frame.configure(bg=c["bg_darkest"])
+                # Actualizar todos los frames hijos del summary_frame
+                for child in self.summary_frame.winfo_children():
+                    if isinstance(child, tk.Frame):
+                        try:
+                            child.configure(bg=c["bg_darkest"])
+                        except:
+                            pass
+            except:
+                pass
+        
+        # Actualizar summary_cards_frame si existe
+        if hasattr(self, 'summary_cards_frame') and self.summary_cards_frame:
+            try:
+                self.summary_cards_frame.configure(bg=c["bg_darkest"])
+            except:
+                pass
+        
+        # Actualizar labels del título y subtítulo si existen
+        if hasattr(self, 'summary_title_label') and self.summary_title_label:
+            try:
+                self.summary_title_label.configure(
+                    bg=c["bg_darkest"],
+                    fg=c["red_primary"]
+                )
+            except:
+                pass
+        
+        if hasattr(self, 'summary_subtitle_label') and self.summary_subtitle_label:
+            try:
+                self.summary_subtitle_label.configure(
+                    bg=c["bg_darkest"],
+                    fg=c["text_secondary"]
+                )
+            except:
+                pass
+        
+        # Actualizar colores de cada tarjeta
+        cards = [
+            ("inventory_card", self.inventory_card),
+            ("sales_card", self.sales_card),
+            ("daily_card", self.daily_card),
+            ("monthly_card", self.monthly_card)
+        ]
+        
+        for card_name, card_dict in cards:
+            if hasattr(self, card_name) and card_dict:
+                try:
+                    # Actualizar card_container (borde rojo)
+                    if "card_container" in card_dict:
+                        card_dict["card_container"].configure(bg=c["red_dark"])
+                    
+                    # Actualizar card_frame (fondo)
+                    if "frame" in card_dict:
+                        card_dict["frame"].configure(bg=c["bg_dark"])
+                    
+                    # Actualizar title_label
+                    if "title_label" in card_dict:
+                        card_dict["title_label"].configure(
+                            bg=c["bg_dark"],
+                            fg=c["red_primary"]
+                        )
+                    
+                    # Actualizar content_label
+                    if "content_label" in card_dict:
+                        card_dict["content_label"].configure(
+                            bg=c["bg_dark"],
+                            fg=c["text_secondary"]
+                        )
+                except Exception:
+                    pass
+    
     def apply_theme(self):
         """Aplica el tema actual a todos los widgets del MainWindow."""
         from .config_module.utils.theme_updater import update_application_theme
@@ -489,6 +578,10 @@ class MainWindow:
                                 subchild.configure(bg=c["bg_medium"])
             except:
                 pass
+        
+        # Actualizar colores de las tarjetas del resumen
+        if hasattr(self, 'inventory_card'):
+            self.update_summary_cards_colors()
     
     def update_summary_title(self):
         """Actualiza el título y subtítulo del resumen con la información de la tienda."""
@@ -512,6 +605,9 @@ class MainWindow:
         self.hide_current_content()
         if self.summary_frame:
             self.summary_frame.pack(fill=tk.BOTH, expand=True)
+        # Actualizar colores de las tarjetas con el tema actual
+        if hasattr(self, 'inventory_card'):
+            self.update_summary_cards_colors()
         self.update_summary_title()
         self.update_summary()
     
