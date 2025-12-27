@@ -106,7 +106,7 @@ class StyleManager:
             arrowcolor=[("active", c["red_bright"])],
             troughcolor=[("active", c["bg_darkest"])]
         )
-        
+
         # Estilo para botones de navegación
         self.style.configure(
             "Nav.TButton",
