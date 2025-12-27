@@ -129,7 +129,7 @@ class ConfigGUI:
         self.canvas.configure(yscrollcommand=v_scrollbar.set)
         
         # Frame scrollable dentro del canvas
-        self.scrollable_frame = tk.Frame(self.canvas, bg=c["bg_darkest"])
+        self.scrollable_frame = tk.Frame(self.canvas, bg=c["bg_darkest"], padx=10, pady=10)
         
         # Crear ventana en el canvas para el frame scrollable
         canvas_window = self.canvas.create_window(
@@ -186,9 +186,6 @@ class ConfigGUI:
         
         # Usar scrollable_frame como main_frame
         main_frame = self.scrollable_frame
-        
-        # Padding del frame principal
-        main_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
         # Título
         from ..config.settings import Settings
