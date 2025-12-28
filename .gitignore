@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/  # Comentado para permitir rastrear ejecutables .exe
 downloads/
 eggs/
 .eggs/
