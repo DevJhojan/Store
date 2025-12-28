@@ -149,3 +149,7 @@ Thumbs.db
 # logs/
 # *.log
 
+# Permitir archivos .exe y la carpeta dist para distribución
+!dist/
+!dist/*.exe
+
