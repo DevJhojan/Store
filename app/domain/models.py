@@ -1,5 +1,6 @@
 """Modelos de dominio del sistema de inventario."""
 from dataclasses import dataclass
+from typing import Optional, Tuple
 
 
 @dataclass
@@ -27,12 +28,12 @@ class Producto:
         """Calcula el subtotal del producto (cantidad * precio_unitario)."""
         return self.cantidad * self.precio_unitario
     
-    def validar(self) -> tuple[bool, str | None]:
+    def validar(self) -> Tuple[bool, Optional[str]]:
         """
         Valida que el producto tenga todos los campos requeridos.
         
         Returns:
-            tuple[bool, str | None]: (es_valido, mensaje_error)
+            Tuple[bool, Optional[str]]: (es_valido, mensaje_error)
         """
         if not self.codigo or not self.codigo.strip():
             return False, "El código es obligatorio."

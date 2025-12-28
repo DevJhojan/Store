@@ -87,6 +87,17 @@ fi
 echo -e "${GREEN}✅ pip disponible en Wine${NC}"
 echo ""
 
+# Instalar dependencias del proyecto en Wine
+if [ -f "requirements.txt" ]; then
+    echo "📦 Instalando dependencias del proyecto en Wine..."
+    echo "   (Esto puede tomar varios minutos...)"
+    wine python -m pip install -r requirements.txt || {
+        echo -e "${YELLOW}⚠️  Algunas dependencias no se pudieron instalar, continuando...${NC}"
+    }
+    echo -e "${GREEN}✅ Dependencias instaladas${NC}"
+    echo ""
+fi
+
 # Verificar PyInstaller en Wine
 echo "🔍 Verificando PyInstaller en Wine..."
 if ! wine python -c "import PyInstaller" 2>/dev/null; then

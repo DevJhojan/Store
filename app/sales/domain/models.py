@@ -1,7 +1,7 @@
 """Modelos de dominio para el módulo de Ventas."""
 from dataclasses import dataclass, field
 from datetime import datetime, date
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from enum import Enum
 
 
@@ -46,7 +46,7 @@ class ItemVenta:
         """Calcula el total del item (con descuento e impuesto)."""
         return self.calcular_subtotal_con_descuento() + self.calcular_impuesto()
     
-    def validar(self) -> tuple[bool, str | None]:
+    def validar(self) -> Tuple[bool, Optional[str]]:
         """Valida que el item tenga todos los campos requeridos."""
         if not self.codigo_producto or not self.codigo_producto.strip():
             return False, "El código del producto es obligatorio."
@@ -91,7 +91,7 @@ class Cliente:
         if self.fecha_registro is None:
             self.fecha_registro = datetime.now()
     
-    def validar(self) -> tuple[bool, str | None]:
+    def validar(self) -> Tuple[bool, Optional[str]]:
         """Valida que el cliente tenga datos mínimos."""
         if not self.nombre or not self.nombre.strip():
             return False, "El nombre del cliente es obligatorio."
@@ -159,7 +159,7 @@ class Venta:
         self.total = subtotal_con_descuento + self.impuesto_total
         return self.total
     
-    def validar(self) -> tuple[bool, str | None]:
+    def validar(self) -> Tuple[bool, Optional[str]]:
         """Valida que la venta sea válida."""
         if not self.items:
             return False, "La venta debe tener al menos un producto."
@@ -239,7 +239,7 @@ class Devolucion:
         self.total_devolucion = sum(item.calcular_total() for item in self.items_devolucion)
         return self.total_devolucion
     
-    def validar(self) -> tuple[bool, str | None]:
+    def validar(self) -> Tuple[bool, Optional[str]]:
         """Valida que la devolución sea válida."""
         if not self.items_devolucion:
             return False, "La devolución debe tener al menos un producto."
@@ -280,7 +280,7 @@ class Gasto:
         if self.fecha is None:
             self.fecha = datetime.now()
     
-    def validar(self) -> tuple[bool, str | None]:
+    def validar(self) -> Tuple[bool, Optional[str]]:
         """Valida que el gasto sea válido."""
         if not self.categoria or not self.categoria.strip():
             return False, "La categoría del gasto es obligatoria."
@@ -378,7 +378,7 @@ class ConfiguracionImpuestos:
     activo: bool = True
     es_global: bool = True  # Si es global, se aplica a todos los productos por defecto
     
-    def validar(self) -> tuple[bool, str | None]:
+    def validar(self) -> Tuple[bool, Optional[str]]:
         """Valida que la configuración sea válida."""
         if not self.nombre or not self.nombre.strip():
             return False, "El nombre del impuesto es obligatorio."
