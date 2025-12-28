@@ -31,7 +31,7 @@ def create_summary_widget(parent: tk.Frame, on_recalculate: Callable) -> Dict[st
     # Botón Recalcular (solo icono, a la izquierda)
     btn_recalcular = ttk.Button(
         summary_header,
-        text="🔄",
+        text="[ Actualizar ]",
         command=on_recalculate,
         style="Accent.TButton"
     )

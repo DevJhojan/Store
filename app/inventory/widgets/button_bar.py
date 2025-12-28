@@ -33,7 +33,7 @@ def create_button_bar(
     
     btn_agregar = ttk.Button(
         buttons_frame,
-        text="➕ Agregar",
+        text="[ + ] Agregar",
         command=on_add,
         style="Accent.TButton"
     )
@@ -41,7 +41,7 @@ def create_button_bar(
     
     btn_actualizar = ttk.Button(
         buttons_frame,
-        text="✏️ Actualizar",
+        text="[ Editar ] Actualizar",
         command=on_update,
         style="Accent.TButton"
     )
@@ -49,7 +49,7 @@ def create_button_bar(
     
     btn_eliminar = ttk.Button(
         buttons_frame,
-        text="🗑️ Eliminar",
+        text="[ X ] Eliminar",
         command=on_delete,
         style="Accent.TButton"
     )
@@ -57,7 +57,7 @@ def create_button_bar(
     
     btn_limpiar = ttk.Button(
         buttons_frame,
-        text="🧹 Limpiar",
+        text="[ Limpiar ]",
         command=on_clear,
         style="Secondary.TButton"
     )

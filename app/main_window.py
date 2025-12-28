@@ -210,7 +210,7 @@ class MainWindow:
         # Labels de título y subtítulo (se actualizarán con información de la tienda)
         self.summary_title_label = tk.Label(
             title_frame,
-            text="◆ RESUMEN DEL SISTEMA DE GESTIÓN ◆",
+            text="[ RESUMEN DEL SISTEMA DE GESTIÓN ]",
             font=(Settings.FONT_PRIMARY, 20, "bold"),
             fg=colors["red_primary"],
             bg=colors["bg_darkest"]
@@ -251,16 +251,16 @@ class MainWindow:
         
         # Crear tarjetas (se actualizarán con datos reales en update_summary)
         self.inventory_card = self.create_summary_card(
-            cards_container, "📦 Inventario", "", colors, 0, 0
+            cards_container, "[ Inventario ]", "", colors, 0, 0
         )
         self.sales_card = self.create_summary_card(
-            cards_container, "💰 Ventas", "", colors, 0, 1
+            cards_container, "[ Ventas ]", "", colors, 0, 1
         )
         self.daily_card = self.create_summary_card(
-            cards_container, "📊 Hoy", "", colors, 1, 0
+            cards_container, "[ Hoy ]", "", colors, 1, 0
         )
         self.monthly_card = self.create_summary_card(
-            cards_container, "📈 Mes Actual", "", colors, 1, 1
+            cards_container, "[ Mes Actual ]", "", colors, 1, 1
         )
         
         # Configurar grid
@@ -336,7 +336,7 @@ class MainWindow:
         # Botón Resumen
         btn_resumen = ttk.Button(
             btn_frame,
-            text="📊 Resumen",
+            text="[ Resumen ]",
             command=self.show_summary,
             style="Nav.TButton",
             width=20
@@ -346,7 +346,7 @@ class MainWindow:
         # Botón Inventarios
         btn_inventario = ttk.Button(
             btn_frame,
-            text="📦 Inventarios",
+            text="[ Inventarios ]",
             command=self.show_inventory,
             style="Nav.TButton",
             width=20
@@ -356,7 +356,7 @@ class MainWindow:
         # Botón Ventas
         btn_ventas = ttk.Button(
             btn_frame,
-            text="💰 Ventas",
+            text="[ Ventas ]",
             command=self.show_sales,
             style="Nav.TButton",
             width=20
@@ -366,7 +366,7 @@ class MainWindow:
         # Botón Cierre de Caja
         btn_cierre = ttk.Button(
             btn_frame,
-            text="💵 Cierre de Caja",
+            text="[ Cierre de Caja ]",
             command=self.show_cash_closure,
             style="Nav.TButton",
             width=20
@@ -376,7 +376,7 @@ class MainWindow:
         # Botón Configuración
         btn_config = ttk.Button(
             btn_frame,
-            text="⚙️ Configuración",
+            text="[ Configuración ]",
             command=self.show_config,
             style="Nav.TButton",
             width=20
@@ -590,7 +590,7 @@ class MainWindow:
             if tienda_info and tienda_info.nombre:
                 # Actualizar título con el nombre de la tienda
                 if hasattr(self, 'summary_title_label'):
-                    self.summary_title_label.config(text=f"◆ {tienda_info.nombre.upper()} ◆")
+                    self.summary_title_label.config(text=f"[ {tienda_info.nombre.upper()} ]")
                 
                 # Actualizar subtítulo con la descripción de la tienda
                 if hasattr(self, 'summary_subtitle_label'):

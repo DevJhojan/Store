@@ -58,7 +58,7 @@ class InventoryManagerGUI:
         
         title_label = tk.Label(
             title_frame,
-            text="◆ SISTEMA DE GESTIÓN DE INVENTARIOS ◆",
+            text="[ SISTEMA DE GESTIÓN DE INVENTARIOS ]",
             font=(Settings.FONT_PRIMARY, Settings.FONT_SIZE_LARGE, "bold"),
             fg=c["red_primary"],
             bg=c["bg_darkest"]
@@ -170,11 +170,11 @@ class InventoryManagerGUI:
     def create_buttons(self, parent: tk.Frame):
         """Crear los botones de acción."""
         buttons_info = [
-            ("➕ Agregar", self.add_product, "Accent.TButton"),
-            ("✏️ Actualizar", self.update_product, "Secondary.TButton"),
-            ("🗑️ Eliminar", self.delete_product, "Secondary.TButton"),
-            ("🔄 Limpiar", self.clear_form, "Secondary.TButton"),
-            ("📊 Recalcular Total", self.update_total_value, "Secondary.TButton"),
+            ("[ + ] Agregar", self.add_product, "Accent.TButton"),
+            ("[ Editar ] Actualizar", self.update_product, "Secondary.TButton"),
+            ("[ Eliminar ]", self.delete_product, "Secondary.TButton"),
+            ("[ Limpiar ]", self.clear_form, "Secondary.TButton"),
+            ("[ Recalcular Total ]", self.update_total_value, "Secondary.TButton"),
         ]
         
         for text, command, style in buttons_info:

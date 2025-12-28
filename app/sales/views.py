@@ -54,7 +54,7 @@ class SalesGUI:
         
         # Configurar ventana (solo si no es Frame)
         if not is_frame:
-            self.window.title("💰 Sistema de Gestión de Ventas")
+            self.window.title("[ Sistema de Gestión de Ventas ]")
             self.window.configure(bg=COLORS["bg_darkest"])
             self.window.resizable(True, True)
             
@@ -240,7 +240,7 @@ class SalesGUI:
         
         title_label = tk.Label(
             title_frame,
-            text="◆ SISTEMA DE GESTIÓN DE VENTAS ◆",
+            text="[ SISTEMA DE GESTIÓN DE VENTAS ]",
             font=(Settings.FONT_PRIMARY, Settings.FONT_SIZE_LARGE, "bold"),
             fg=c["red_primary"],
             bg=c["bg_darkest"]
@@ -356,7 +356,7 @@ class SalesGUI:
         
         btn_buscar = ttk.Button(
             search_row,
-            text="🔍 Buscar",
+            text="[ Buscar ]",
             command=self.buscar_producto,
             style="Secondary.TButton"
         )
@@ -392,7 +392,7 @@ class SalesGUI:
         
         btn_buscar_nombre = ttk.Button(
             search_name_row,
-            text="🔍 Buscar Nombre",
+            text="[ Buscar Nombre ]",
             command=self.buscar_por_nombre,
             style="Secondary.TButton"
         )
@@ -452,7 +452,7 @@ class SalesGUI:
         
         btn_agregar = ttk.Button(
             qty_row,
-            text="➕ Agregar al Carrito",
+            text="[ + ] Agregar al Carrito",
             command=self.agregar_al_carrito,
             style="Accent.TButton"
         )
@@ -590,7 +590,7 @@ class SalesGUI:
         # Botón limpiar
         btn_limpiar_config = ttk.Button(
             buttons_parent,
-            text="🔄 Limpiar\nConfiguración",
+            text="[ Limpiar Configuración ]",
             command=self.limpiar_configuracion,
             style="Secondary.TButton",
             width=20
@@ -677,7 +677,7 @@ class SalesGUI:
         # Botón para remover item
         btn_remover = ttk.Button(
             parent,
-            text="🗑️ Remover Item Seleccionado",
+            text="[ X ] Remover Item Seleccionado",
             command=self.remover_item,
             style="Secondary.TButton"
         )
@@ -756,7 +756,7 @@ class SalesGUI:
         # Botón principal de Registrar Venta (flotante, grande)
         btn_registrar = ttk.Button(
             floating_inner,
-            text="💰 REGISTRAR VENTA",
+            text="[ REGISTRAR VENTA ]",
             command=self.registrar_venta,
             style="Accent.TButton"
         )
@@ -765,7 +765,7 @@ class SalesGUI:
         # Botón secundario
         btn_limpiar = ttk.Button(
             floating_inner,
-            text="🔄 Nueva Venta",
+            text="[ Nueva Venta ]",
             command=self.nueva_venta,
             style="Secondary.TButton"
         )

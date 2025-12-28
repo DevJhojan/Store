@@ -36,7 +36,7 @@ class CashClosureGUI:
         
         # Configurar ventana (solo si no es Frame)
         if not is_frame:
-            self.window.title("💵 Cierre de Caja")
+            self.window.title("[ Cierre de Caja ]")
             self.window.configure(bg=COLORS["bg_darkest"])
             self.window.resizable(True, True)
             
@@ -159,7 +159,7 @@ class CashClosureGUI:
         # Título
         title_label = tk.Label(
             main_frame,
-            text="💵 CIERRE DE CAJA",
+            text="[ CIERRE DE CAJA ]",
             font=(Settings.FONT_PRIMARY, 18, "bold"),
             fg=c["red_primary"],
             bg=c["bg_darkest"],
@@ -340,7 +340,7 @@ class CashClosureGUI:
         
         btn_aplicar = ttk.Button(
             buttons_frame,
-            text="🔍 Aplicar Filtros",
+            text="[ Aplicar Filtros ]",
             command=self.aplicar_filtros,
             style="Accent.TButton"
         )
@@ -348,7 +348,7 @@ class CashClosureGUI:
         
         btn_limpiar = ttk.Button(
             buttons_frame,
-            text="🧹 Limpiar Filtros",
+            text="[ Limpiar Filtros ]",
             command=self.limpiar_filtros,
             style="Secondary.TButton"
         )
@@ -456,7 +456,7 @@ class CashClosureGUI:
         # Título del panel de detalles
         detalle_title = tk.Label(
             self.detalle_container,
-            text="📋 Detalles de la Venta",
+            text="[ Detalles de la Venta ]",
             font=(Settings.FONT_PRIMARY, 12, "bold"),
             fg=c["red_primary"],
             bg=c["bg_dark"],
@@ -981,7 +981,7 @@ class CashClosureGUI:
         # Título del resumen de ganancias
         ganancia_title = tk.Label(
             ganancia_summary_frame,
-            text="💰 Resumen de Ganancias",
+            text="[ Resumen de Ganancias ]",
             font=(Settings.FONT_PRIMARY, 11, "bold"),
             fg=c["red_primary"],
             bg=c["bg_dark"],

@@ -69,7 +69,7 @@ class ConfigGUI:
         
         # Configurar ventana (solo si no es Frame)
         if not is_frame:
-            self.window.title("⚙️ Configuración")
+            self.window.title("[ Configuración ]")
             self.window.configure(bg=COLORS["bg_darkest"])
             self.window.resizable(True, True)
         else:
@@ -189,7 +189,7 @@ class ConfigGUI:
         from ..config.settings import Settings
         title_label = tk.Label(
             main_frame,
-            text="⚙️ CONFIGURACIÓN",
+            text="[ CONFIGURACIÓN ]",
             font=(Settings.FONT_PRIMARY, 18, "bold"),
             fg=c["red_primary"],
             bg=c["bg_darkest"],
