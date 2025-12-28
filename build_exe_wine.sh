@@ -1,8 +1,16 @@
 #!/bin/bash
 # Script para construir ejecutable .exe para Windows que funciona en Linux con Wine
 # Requisitos: Wine, Python para Windows (instalado en Wine)
+# 
+# Uso: ./build_exe_wine.sh
+# 
+# Si Python no está instalado en Wine, el script te ofrecerá ejecutar
+# install_python_wine.sh para instalarlo automáticamente.
+#
+# El .exe generado funcionará tanto en Windows como en Linux con Wine.
 
 echo "🍷 Construyendo ejecutable .exe para Windows (compatible con Wine)..."
+echo "   Este .exe funcionará tanto en Windows como en Linux con Wine"
 echo ""
 
 # Colores para mensajes
@@ -26,16 +34,40 @@ echo "🔍 Verificando Python en Wine..."
 if ! wine python --version &> /dev/null; then
     echo -e "${YELLOW}⚠️  Python no está instalado en Wine${NC}"
     echo ""
-    echo "Para instalar Python en Wine:"
-    echo "1. Descarga Python para Windows desde https://www.python.org/downloads/"
-    echo "2. Ejecuta: wine /ruta/al/python-installer.exe"
-    echo "3. Durante la instalación, asegúrate de marcar 'Add Python to PATH'"
+    echo "Para instalar Python en Wine, tienes dos opciones:"
     echo ""
-    echo "O usa winetricks (más fácil):"
-    echo "  sudo apt install winetricks"
-    echo "  winetricks python39  # o la versión que prefieras"
+    echo -e "${GREEN}Opción 1 (Recomendada - Automática):${NC}"
+    echo "  ./install_python_wine.sh"
+    echo "  Este script descarga e instala Python automáticamente"
     echo ""
-    exit 1
+    echo -e "${GREEN}Opción 2 (Manual):${NC}"
+    echo "  1. Descarga Python para Windows desde: https://www.python.org/downloads/"
+    echo "  2. Ejecuta: wine /ruta/al/python-installer.exe"
+    echo "  3. Durante la instalación, marca 'Add Python to PATH'"
+    echo ""
+    echo -e "${YELLOW}¿Deseas ejecutar el instalador automático ahora? (s/n):${NC} "
+    read -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[SsYy]$ ]]; then
+        if [ -f "install_python_wine.sh" ]; then
+            echo ""
+            echo "Ejecutando instalador automático..."
+            ./install_python_wine.sh
+            echo ""
+            # Verificar nuevamente después de la instalación
+            if ! wine python --version &> /dev/null; then
+                echo -e "${RED}❌ La instalación no fue exitosa${NC}"
+                exit 1
+            fi
+        else
+            echo -e "${RED}❌ No se encontró install_python_wine.sh${NC}"
+            echo "Por favor, instala Python manualmente siguiendo la Opción 2"
+            exit 1
+        fi
+    else
+        echo "Por favor, instala Python antes de continuar."
+        exit 1
+    fi
 else
     PYTHON_VERSION=$(wine python --version 2>&1)
     echo -e "${GREEN}✅ $PYTHON_VERSION detectado en Wine${NC}"
