@@ -1,5 +1,7 @@
 # Sistema de Gestión de Ventas - Store
 
+![Store Management](Mi_tienda.png)
+
 Sistema completo de gestión de ventas con interfaz gráfica desarrollado con Python y tkinter, siguiendo principios de Clean Architecture. Incluye gestión de inventarios, ventas, clientes y cierre de caja con almacenamiento local.
 
 ## Características
@@ -61,22 +63,65 @@ app/
 
 ## Instalación
 
-### Como módulo instalable
+### 📦 Opción 1: Descargar Ejecutables Pre-compilados (Recomendado)
+
+Los ejecutables pre-compilados están disponibles en la carpeta `dist/` del repositorio. No requieren instalación de Python ni dependencias.
+
+#### Para Windows:
+1. Ve a la carpeta `dist/` en el repositorio
+2. Descarga `StoreManagement.exe`
+3. Haz doble clic en el archivo para ejecutar
+
+#### Para Linux:
+1. Ve a la carpeta `dist/` en el repositorio
+2. Descarga `StoreManagement`
+3. Dale permisos de ejecución:
+   ```bash
+   chmod +x StoreManagement
+   ```
+4. Ejecuta el programa:
+   ```bash
+   ./StoreManagement
+   ```
+
+#### Para ejecutar .exe en Linux con Wine:
+Si descargaste el `.exe` y quieres ejecutarlo en Linux, necesitas Wine:
+```bash
+wine dist/StoreManagement.exe
+```
+
+### 🔧 Opción 2: Instalación desde Código Fuente
+
+#### Como módulo instalable
 
 ```bash
 pip install -e .
 ```
 
-### Uso directo
+#### Uso directo
 
 ```bash
 python main.py
 ```
 
+**Requisitos para ejecutar desde código fuente:**
+- Python 3.8+
+- tkinter (incluido en la mayoría de distribuciones de Python)
+- sqlite3 (incluido en Python estándar)
+- Dependencias del proyecto:
+  ```bash
+  pip install -r requirements.txt
+  ```
+
 ## Uso
 
 ### Ejecutar la aplicación
 
+**Si descargaste el ejecutable:**
+- **Windows**: Doble clic en `StoreManagement.exe`
+- **Linux**: Ejecuta `./StoreManagement` desde la terminal
+
+**Si instalaste desde código fuente:**
 ```bash
 python main.py
 ```
@@ -150,9 +195,16 @@ El proyecto sigue los principios de **Clean Architecture**:
 
 ## Requisitos
 
+### Para ejecutables pre-compilados:
+- **Windows**: Windows 7 o superior
+- **Linux**: Cualquier distribución Linux moderna (Ubuntu, Debian, Fedora, etc.)
+- **Para .exe en Linux**: Wine (opcional)
+
+### Para ejecutar desde código fuente:
 - Python 3.8+
 - tkinter (incluido en la mayoría de distribuciones de Python)
 - sqlite3 (incluido en Python estándar)
+- Dependencias: `pip install -r requirements.txt`
 
 ## Desarrollo
 
